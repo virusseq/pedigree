@@ -3,12 +3,24 @@ require('dotenv').config({
 });
 
 import logger from '@/logger';
+import { gsBucketName, gsFolderName } from '@/config';
+import { listFiles, streamFileDownload } from './storage';
+import { getNewestFile } from './utils';
 
 /**
  * Main Function - All work done here
  */
 async function runScript() {
-  logger.debug('Service is running!');
+  listFiles(gsBucketName, gsFolderName)
+    .then((files) => getNewestFile(files[0]))
+    .then((newFile) => {
+      logger.debug('Newest File is:' + newFile.name);
+      return newFile.name;
+    })
+    .then((file) => streamFileDownload(gsBucketName, file))
+    .catch((err) => {
+      console.error(err);
+    });
 }
 
 /**
