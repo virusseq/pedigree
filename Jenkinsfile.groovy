@@ -170,12 +170,19 @@ pipeline {
         }
       }
       steps {
-        build(job: 'virusseq/update-app-version', parameters: [
-          [$class: 'StringParameterValue', name: 'CANCOGEN_ENV', value: 'dev' ],
-          [$class: 'StringParameterValue', name: 'TARGET_RELEASE', value: "${appName}"],
-          [$class: 'StringParameterValue', name: 'NEW_APP_VERSION', value: "${commit}" ],
-          [$class: 'StringParameterValue', name: 'BUILD_BRANCH', value: env.BRANCH_NAME ]
-        ])
+        script {
+          // we don't want the build to be tagged as failed because it could not be deployed.
+          try {
+            build(job: 'virusseq/update-app-version', parameters: [
+              [$class: 'StringParameterValue', name: 'CANCOGEN_ENV', value: 'dev' ],
+              [$class: 'StringParameterValue', name: 'TARGET_RELEASE', value: "${appName}"],
+              [$class: 'StringParameterValue', name: 'NEW_APP_VERSION', value: "${commit}" ],
+              [$class: 'StringParameterValue', name: 'BUILD_BRANCH', value: env.BRANCH_NAME ]
+            ])
+          } catch (err) {
+            echo 'The app built successfully, but could not be deployed'
+          }
+        }
       }
     }
   }
