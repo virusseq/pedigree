@@ -1,20 +1,21 @@
 import logger from '@/logger';
-// Imports the Google Cloud client library
 import { Storage } from '@google-cloud/storage';
 import { parse, transform } from 'csv';
 import { tsvColumnNames } from '@/config';
-
-const fs = require('fs');
-const path = require('path');
-
-const cwd = path.join(__dirname, '..');
+import fs from 'fs';
+import path from 'path';
 
 // Creates a client
 const storage = new Storage();
 
+// Project root path
+const cwd = path.join(__dirname, '..');
+
 export const streamFileDownload = async function (bucketName: string, fileName: string) {
-  const destFileName = path.join(cwd, fileName.split('/').pop()?.replaceAll(':', '_'));
-  fs.access(destFileName, fs.F_OK, (err: string) => {
+  const destFileName = path.join(cwd, fileName.split('/').pop()?.replaceAll(':', '_') || '');
+
+  // Check if the file exists in the current directory.
+  fs.access(destFileName, fs.constants.F_OK, (err) => {
     if (err) {
       logger.info(`Downloading file:${fileName}`);
       storage
@@ -30,7 +31,7 @@ export const streamFileDownload = async function (bucketName: string, fileName: 
         )
         .pipe(
           transform((record) =>
-          tsvColumnNames
+            tsvColumnNames
               .map((name: string) => record[name.trim()])
               .join('\t')
               .concat('\n'),

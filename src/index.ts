@@ -1,7 +1,7 @@
-require('dotenv').config({
+import * as dotenv from 'dotenv';
+dotenv.config({
   debug: process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true',
 });
-
 import logger from '@/logger';
 import { gsBucketName, gsFolderName } from '@/config';
 import { listFiles, streamFileDownload } from './storage';
