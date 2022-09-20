@@ -1,6 +1,8 @@
 import logger from '@/logger';
 // Imports the Google Cloud client library
 import { Storage } from '@google-cloud/storage';
+import { parse, transform } from 'csv';
+import { tsvColumnNames } from '@/config';
 
 const fs = require('fs');
 const path = require('path');
@@ -19,11 +21,28 @@ export const streamFileDownload = async function (bucketName: string, fileName: 
         .bucket(bucketName)
         .file(fileName)
         .createReadStream() //stream is created
+        .pipe(
+          parse({
+            delimiter: '\t',
+            columns: true,
+            trim: true,
+          }),
+        )
+        .pipe(
+          transform((record) =>
+          tsvColumnNames
+              .map((name: string) => record[name.trim()])
+              .join('\t')
+              .concat('\n'),
+          ),
+        )
         .pipe(fs.createWriteStream(destFileName))
         .on('finish', () => {
           // The file download is complete
           logger.info(`gs://${bucketName}/${fileName} downloaded to ${destFileName}.`);
         });
+
+      return;
     }
 
     //file exists

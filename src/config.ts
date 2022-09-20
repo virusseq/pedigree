@@ -2,3 +2,4 @@ export const debug = process.env.NODE_ENV === 'development' || process.env.DEBUG
 export const podName = process.env.HOSTNAME || '';
 export const gsBucketName = process.env.GS_BUCKET_NAME || '';
 export const gsFolderName = process.env.GS_FOLDER || '';
+export const tsvColumnNames = process.env.TSV_ALLOWED_COLUMN_NAMES?.split(",") || ['']
