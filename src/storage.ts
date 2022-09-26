@@ -1,9 +1,10 @@
 import logger from '@/logger';
 import { Storage } from '@google-cloud/storage';
 import { parse, transform } from 'csv';
-import { tsvColumnNames } from '@/config';
+import { tsvColumnNames, song_endpoint } from '@/config';
 import fs from 'fs';
 import path from 'path';
+import axios from 'axios';
 
 // Creates a client
 const storage = new Storage();
@@ -18,10 +19,7 @@ export const streamFileDownload = async function (bucketName: string, fileName: 
   fs.access(destFileName, fs.constants.F_OK, (err) => {
     if (err) {
       logger.info(`Downloading file:${fileName}`);
-      storage
-        .bucket(bucketName)
-        .file(fileName)
-        .createReadStream() //stream is created
+      storage.bucket(bucketName).file(fileName).createReadStream() //stream is created
         .pipe(
           parse({
             delimiter: '\t',
@@ -29,14 +27,7 @@ export const streamFileDownload = async function (bucketName: string, fileName: 
             trim: true,
           }),
         )
-        .pipe(
-          transform((record) =>
-            tsvColumnNames
-              .map((name: string) => record[name.trim()])
-              .join('\t')
-              .concat('\n'),
-          ),
-        )
+        .pipe(transform(handleData))
         .pipe(fs.createWriteStream(destFileName))
         .on('finish', () => {
           // The file download is complete
@@ -62,3 +53,30 @@ export const listFiles = async function (bucketName: string, folderName: string)
   logger.debug(`List files on bucket ${bucketName} folder:${folderName}`);
   return storage.bucket(bucketName).getFiles(options);
 };
+
+function handleData(row: any) {
+  // Async call
+  updateRecord(row);
+
+  // Transform data
+  return tsvColumnNames
+    .map((name: string) => row[name.trim()])
+    .join('\t')
+    .concat('\n');
+}
+
+function updateRecord(record: any) {
+  logger.info(`calling ${song_endpoint} record:${record['specimen_collector_sample_ID']}`);
+
+  let payload = {
+    lineage: record['lineage'],
+  };
+  axios
+    .post(song_endpoint, payload)
+    .then((msg) =>
+      logger.debug(
+        `record:${record['specimen_collector_sample_ID']} status:${msg.status}, statusText:${msg.statusText}, data:${JSON.stringify(msg.data)}`,
+      ),
+    )
+    .catch((err) => logger.error(`error:${err}`));
+}
