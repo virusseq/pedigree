@@ -6,6 +6,8 @@
   "scripts": {
     "build": "ttsc",
     "dev": "ts-node ./src/index.ts",
+    "dev:updatelineage": "ts-node ./src/index.ts --profile=updatelineage",
+    "dev:updatecache": "ts-node ./src/index.ts --profile=updatecache",
     "dev:nodemon": "nodemon -e js,json,ts -x ts-node ./src/index.ts",
     "start:local": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js",
     "start:prod": "node -r tsconfig-paths/register index.js",
@@ -19,10 +21,12 @@
     "csv": "^6.2.0",
     "dotenv": "^16.0.0",
     "lodash": "^4.17.21",
+    "minimist": "^1.2.6",
     "winston": "^3.8.2"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.185",
+    "@types/minimist": "^1.2.2",
     "@types/node": "^18.7.18",
     "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
