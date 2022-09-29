@@ -2,27 +2,11 @@ import logger from '@/logger';
 import axios from 'axios';
 import { song_endpoint } from '@/config';
 
-const cache: Array<any> = [];
-
-export const getCache = async function (useCache: boolean) {
-  return new Promise<Array<any>>((resolve) => {
-    if (useCache) {
-      initCache()
-    } else{
-      resolve([])
-    }
-  });
-}
-
-export const initCache = function () {
-  getStudies()
-    .then(getAnalysisByStudy)
-    .then(saveCacheAnalysis)
-    .then((res: any) => logger.debug('Script completed'))
-    .catch((err: any) => logger.error(`error:${err}`));
+export const initCache = function (): Promise<void> {
+  return getStudies().then(getAnalysisByStudy).then(saveCacheAnalysis);
 };
 
-function getStudies() {
+function getStudies(): Promise<String[]> {
   return new Promise<String[]>((resolve, reject) => {
     return axios
       .get(`${song_endpoint}/studies/all`)
@@ -34,7 +18,7 @@ function getStudies() {
   });
 }
 
-function getAnalysisByStudy(studies: String[]) {
+function getAnalysisByStudy(studies: String[]): Promise<Array<Object>> {
   const analysisState: string = 'PUBLISHED';
   const limit: number = 100;
   const offset: number = 0;
@@ -46,7 +30,7 @@ function getAnalysisByStudy(studies: String[]) {
 
   const fullEndpoint = `${song_endpoint}/studies/${studyId}/analysis/paginated?analysisStates=${analysisState}&limit=${limit}&offset=${offset}`;
 
-  return new Promise((resolve, reject) => {
+  return new Promise<Array<Object>>((resolve, reject) => {
     return axios
       .get(fullEndpoint)
       .then((resp) => {
@@ -57,12 +41,12 @@ function getAnalysisByStudy(studies: String[]) {
   });
 }
 
-function saveCacheAnalysis(analysis: any) {
-  return new Promise((resolve, reject) => {
+function saveCacheAnalysis(analysis: Array<Object>): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     logger.info(`caching ${analysis?.length} analysis`);
 
     //TODO: cache analysis
 
-    resolve(analysis);
+    resolve();
   });
 }
