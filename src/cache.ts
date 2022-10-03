@@ -1,6 +1,6 @@
-import logger from '@/logger';
 import axios from 'axios';
-import { song_endpoint } from '@/config';
+import logger from './logger';
+import { song_endpoint } from './config';
 
 export const initCache = function (): Promise<void> {
   return getStudies().then(getAnalysisByStudy).then(saveCacheAnalysis);
@@ -50,3 +50,12 @@ function saveCacheAnalysis(analysis: Array<Object>): Promise<void> {
     resolve();
   });
 }
+
+export const getAnalysisIdBySpecimenCollectorSampleId = (id: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    
+    // TODO: get analysisId from cache
+    
+    resolve('')
+  });
+};

@@ -1,10 +1,10 @@
-import logger from '@/logger';
 import { GetFilesResponse, Storage } from '@google-cloud/storage';
 import { parse } from 'csv';
-import { song_endpoint, gsBucketName, gsFolderName } from '@/config';
-import axios from 'axios';
+
+import { gsBucketName, gsFolderName } from './config';
 import { getNewestFile } from './utils';
-import { Writable } from 'stream';
+import logger from './logger';
+import { handleData } from './lineage';
 
 // Creates a client
 const storage = new Storage();
@@ -58,37 +58,3 @@ export const listFiles = async function (
   logger.debug(`List files on bucket ${bucketName} folder:${folderName}`);
   return storage.bucket(bucketName).getFiles(options);
 };
-
-const handleData = new Writable({
-  objectMode: true,
-  write(chunk, _encoding, callback) {
-    const { study_id, specimen_collector_sample_ID, lineage, scorpio_call } = chunk;
-
-    logger.debug(`start processing id:${specimen_collector_sample_ID}`);
-
-    // TODO: get from Cache AnalysisID by specimen_collector_sample_ID
-    // TODO: IF analysisID not found in Cache get Study/Analysis and save in Cache
-    // TODO: IF lineage Data mismatch then Update Record in Cache and Song
-
-    // Comment out to stop Stream
-    callback();
-  },
-});
-
-function updateRecord(record: any) {
-  logger.info(`calling ${song_endpoint} record:${record['specimen_collector_sample_ID']}`);
-
-  let payload = {
-    lineage: record['lineage'],
-  };
-  axios
-    .post(song_endpoint, payload)
-    .then((msg) =>
-      logger.debug(
-        `record:${record['specimen_collector_sample_ID']} status:${msg.status}, statusText:${
-          msg.statusText
-        }, data:${JSON.stringify(msg.data)}`,
-      ),
-    )
-    .catch((err) => logger.error(`error:${err}`));
-}

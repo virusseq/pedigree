@@ -1,5 +1,6 @@
-import logger from '@/logger';
 import { File } from '@google-cloud/storage';
+
+import logger from './logger';
 
 export const getNewestFile = async function (files: Array<File>) {
   // Get only the newest file by timeCreated
