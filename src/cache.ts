@@ -1,51 +1,53 @@
-import axios from 'axios';
 import logger from './logger';
-import { song_endpoint } from './config';
+import { connectRedis } from './redisConfig';
+import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/song';
 
 export const initCache = function (): Promise<void> {
-  return getStudies().then(getAnalysisByStudy).then(saveCacheAnalysis);
+  return new Promise(async (resolve, reject) => {
+    getAllStudies()
+      .then(async (studies) => Promise.all(studies.map(study => getAndCacheAnalysisByStudy(study))))
+      .catch(reject);
+  });
 };
 
-function getStudies(): Promise<String[]> {
-  return new Promise<String[]>((resolve, reject) => {
-    return axios
-      .get(`${song_endpoint}/studies/all`)
-      .then((resp) => {
-        logger.debug(`found ${resp.data?.length} studies`);
-        resolve(resp.data);
-      })
-      .catch((err) => reject(err));
+function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    const limit: number = 9;
+    let offset: number = 0;
+    let total: number = limit;
+
+    while (offset < total) {
+      let resp = await getAnalysisByStudyPaginated(studyId, limit, offset);
+      offset += resp.currentTotalAnalyses;
+      total = resp.totalAnalyses;
+
+      if(total > 0){
+        await saveCacheAnalysis(resp.analyses);
+      }
+    }
+    resolve(studyId);
   });
 }
 
-function getAnalysisByStudy(studies: String[]): Promise<Array<Object>> {
-  const analysisState: string = 'PUBLISHED';
-  const limit: number = 100;
-  const offset: number = 0;
-
-  // test
-  const studyId: string = 'KHSC-ON';
-
-  logger.info(`getAnalysisByStudy - fetching analysis for study:${studyId}`);
-
-  const fullEndpoint = `${song_endpoint}/studies/${studyId}/analysis/paginated?analysisStates=${analysisState}&limit=${limit}&offset=${offset}`;
-
-  return new Promise<Array<Object>>((resolve, reject) => {
-    return axios
-      .get(fullEndpoint)
-      .then((resp) => {
-        logger.debug(`found ${resp?.data?.analyses?.length} analysis`);
-        resolve(resp.data?.analyses);
-      })
-      .catch((err) => reject(err));
-  });
-}
-
-function saveCacheAnalysis(analysis: Array<Object>): Promise<void> {
+function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    logger.info(`caching ${analysis?.length} analysis`);
+    logger.debug(`caching ${analysisList?.length} analysis`);
 
     //TODO: cache analysis
+    connectRedis().then(async (c) => {
+      for (const analysis of analysisList) {
+        if (
+          analysis.samples.at(0) != undefined &&
+          analysis.samples.at(0)?.submitterSampleId != undefined
+        ) {
+          await c.hSet(
+            'sample:' + analysis.samples.at(0)?.submitterSampleId,
+            'analysisId',
+            analysis.analysisId,
+          );
+        }
+      }
+    });
 
     resolve();
   });
@@ -53,9 +55,8 @@ function saveCacheAnalysis(analysis: Array<Object>): Promise<void> {
 
 export const getAnalysisIdBySpecimenCollectorSampleId = (id: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    
     // TODO: get analysisId from cache
-    
-    resolve('')
+
+    resolve('');
   });
 };

@@ -11,3 +11,6 @@ export const authJwtKey = process.env.JWT_KEY || '';
 export const authJwtKeyUrl = process.env.JWT_KEY_URL || '';
 export const vaultEnabled = process.env.VAULT_ENABLED === 'true'
 export const authEnabled = process.env.VAULT_ENABLED !== 'false' // true unless set to 'false'
+export const redisHost = process.env.REDIS_HOST || 'localhost';
+export const redisPort = parseInt(process.env.REDIS_PORT || '6379');
+export const redisPassword = process.env.REDIS_PASSWORD || '';

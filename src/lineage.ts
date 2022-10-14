@@ -12,8 +12,10 @@ export const startUpdateLineageScript = function (useCache: boolean) {
   logger.info(`startUpdateLineageScript useCache:${useCache}`);
 
   if (!useCache) {
+    // do not use stored cache. Fetch fresh data instead
     initCache().then(pipelineSource);
   } else {
+    // use stored cache.
     pipelineSource();
   }
 };
@@ -38,14 +40,14 @@ export const handleData = new Writable({
   },
 });
 
-function updateRecord(studyId: string, analysisId: string, data: any): Promise<String> {
-  return new Promise<String>(async (resolve, reject) => {
+function updateRecord(studyId: string, analysisId: string, data: any): Promise<string> {
+  return new Promise<string>(async (resolve, reject) => {
     const fullUrl = `${song_endpoint}/studies/${studyId}/analysis/${analysisId}`;
 
     logger.debug(`calling PUT ${fullUrl}`);
 
     return axios
-      .put(fullUrl, data, {
+      .patch(fullUrl, data, {
         headers: {
           Authorization: `Bearer ${await getEgoToken()}`,
         },
