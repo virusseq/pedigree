@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { redisHost, redisPort, redisPassword } from './config';
+import { redisHost, redisPort, redisPassword } from '../config';
 
 type RedisClient = ReturnType<typeof createClient>;
 
@@ -13,14 +13,11 @@ const client = createClient({
 
 export function connectRedis(): Promise<RedisClient> {
   return new Promise(async (resolve, reject) => {
-
     client.on('error', (err) => reject('Redis Client Error:' + err));
 
-    if(!client.isOpen){
+    if (!client.isOpen) {
       await client.connect();
     }
-
-    
 
     return resolve(client);
   });

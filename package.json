@@ -6,8 +6,8 @@
   "scripts": {
     "build": "ttsc",
     "dev": "ts-node ./src/index.ts",
-    "dev:updatelineage": "ts-node ./src/index.ts --profile=updatelineage",
-    "dev:updatecache": "ts-node ./src/index.ts --profile=updatecache",
+    "dev:updateanalysis": "ts-node ./src/index.ts --profile=updateanalysis",
+    "dev:loadcache": "ts-node ./src/index.ts --profile=loadcache",
     "dev:nodemon": "nodemon -e js,json,ts -x ts-node ./src/index.ts",
     "start:local": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js",
     "start:prod": "node -r tsconfig-paths/register index.js",

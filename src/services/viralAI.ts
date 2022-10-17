@@ -1,33 +1,29 @@
 import { GetFilesResponse, Storage } from '@google-cloud/storage';
 import { parse } from 'csv';
 
-import { gsBucketName, gsFolderName } from './config';
-import { getNewestFile } from './utils';
-import logger from './logger';
-import { handleData } from './lineage';
+import { gsBucketName, gsFolderName } from '../config';
+import { getNewestFile } from '../utils/utils';
+import logger from '../utils/logger';
+import { Writable } from 'stream';
 
 // Creates a client
 const storage = new Storage();
 
-export const pipelineSource = function (): Promise<void> {
-  return new Promise<void>(() => {
-    listFiles(gsBucketName, gsFolderName)
-      .then((files: GetFilesResponse) => getNewestFile(files[0]))
-      .then((newFile) => {
-        logger.debug('Newest File is:' + newFile.name);
-        return newFile.name;
-      })
-      .then((fileName: string) => streamFileDownload(gsBucketName, fileName));
+export const getLatestViralAIFileName = function (): Promise<string> {
+  return new Promise<string>(() => {
+    listFiles(gsBucketName, gsFolderName).then((files: GetFilesResponse) =>
+      getNewestFile(files[0]),
+    );
   });
 };
 
 export const streamFileDownload = async function (
-  bucketName: string,
   fileName: string,
+  handleData: Writable,
 ): Promise<void> {
   logger.info(`Downloading file:${fileName}`);
   storage
-    .bucket(bucketName)
+    .bucket(gsBucketName)
     .file(fileName)
     .createReadStream() //stream is created
     .pipe(
@@ -40,11 +36,11 @@ export const streamFileDownload = async function (
     .pipe(handleData)
     .on('finish', () => {
       // The file download is complete
-      logger.info(`gs://${bucketName}/${fileName} download completed`);
+      logger.info(`gs://${gsBucketName}/${fileName} download completed`);
     });
 };
 
-export const listFiles = async function (
+const listFiles = async function (
   bucketName: string,
   folderName: string,
 ): Promise<GetFilesResponse> {

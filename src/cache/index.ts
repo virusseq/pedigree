@@ -1,11 +1,14 @@
-import logger from './logger';
+import logger from '../utils/logger';
 import { connectRedis } from './redisConfig';
 import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/song';
 
-export const initCache = function (): Promise<void> {
+export const startLoadCachePipeline = function (): Promise<void> {
   return new Promise(async (resolve, reject) => {
-    getAllStudies()
-      .then(async (studies) => Promise.all(studies.map(study => getAndCacheAnalysisByStudy(study))))
+    connectRedis()
+      .then(getAllStudies)
+      .then(async (studies) =>
+        Promise.all(studies.map((study) => getAndCacheAnalysisByStudy(study))),
+      )
       .catch(reject);
   });
 };
@@ -21,8 +24,12 @@ function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
       offset += resp.currentTotalAnalyses;
       total = resp.totalAnalyses;
 
-      if(total > 0){
-        await saveCacheAnalysis(resp.analyses);
+      if (total > 0) {
+        try {
+          await saveCacheAnalysis(resp.analyses);
+        } catch (error) {
+          logger.error(error);
+        }
       }
     }
     resolve(studyId);
@@ -34,20 +41,22 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
     logger.debug(`caching ${analysisList?.length} analysis`);
 
     //TODO: cache analysis
-    connectRedis().then(async (c) => {
-      for (const analysis of analysisList) {
-        if (
-          analysis.samples.at(0) != undefined &&
-          analysis.samples.at(0)?.submitterSampleId != undefined
-        ) {
-          await c.hSet(
-            'sample:' + analysis.samples.at(0)?.submitterSampleId,
-            'analysisId',
-            analysis.analysisId,
-          );
+    connectRedis()
+      .then(async (c) => {
+        for (const analysis of analysisList) {
+          if (
+            analysis.samples.at(0) != undefined &&
+            analysis.samples.at(0)?.submitterSampleId != undefined
+          ) {
+            await c.hSet(
+              'sample:' + analysis.samples.at(0)?.submitterSampleId,
+              'analysisId',
+              analysis.analysisId,
+            );
+          }
         }
-      }
-    });
+      })
+      .catch((error) => reject(error));
 
     resolve();
   });

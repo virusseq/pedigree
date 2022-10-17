@@ -1,6 +1,6 @@
 import egoTokenUtils from '@icgc-argo/ego-token-utils';
 
-import logger from './logger';
+import logger from '../utils/logger';
 import {
   authEgoClientId,
   authEgoClientSecret,
@@ -8,7 +8,7 @@ import {
   authJwtKeyUrl,
   authEnabled,
   authEgoUrl,
-} from './config';
+} from '../config';
 import axios from 'axios';
 
 let authClient: AuthClient;
