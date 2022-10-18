@@ -22,3 +22,9 @@ export function connectRedis(): Promise<RedisClient> {
     return resolve(client);
   });
 }
+
+export function disconnectRedis() {
+  if (!client.isOpen) {
+    client.quit;
+  }
+}

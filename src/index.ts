@@ -5,6 +5,7 @@ dotenv.config({
 import logger from '@/utils/logger';
 import minimist from 'minimist';
 import { startLoadCachePipeline } from './cache';
+import { disconnectRedis } from './cache/redisConfig';
 import { startUpdateAnalysisPipeline } from './services/index';
 
 /**
@@ -22,17 +23,19 @@ async function runScript(args: any) {
       case 'updateanalysis':
         // this profile will update analysis data using existing cache.
         // if cache is not up to date it will update cache
-        startUpdateAnalysisPipeline();
+        await startUpdateAnalysisPipeline();
         break;
 
       default:
         // this profile will start updating cache to then proceed to update analysis data
-        startLoadCachePipeline().then(startUpdateAnalysisPipeline);
+        await startLoadCachePipeline().then(startUpdateAnalysisPipeline);
         break;
     }
     logger.info(`Script completed successfully`);
   } catch (error) {
     logger.error(`Error:${error}`);
+  } finally {
+    disconnectRedis();
     process.exit(1);
   }
 }

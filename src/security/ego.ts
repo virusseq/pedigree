@@ -85,6 +85,7 @@ const getPublicKey = async (): Promise<string> =>
     }
 
     if (authJwtKeyUrl) {
+      // TODO: cache public key
       return axios
         .get(authJwtKeyUrl)
         .then((response) => resolve(response.data))

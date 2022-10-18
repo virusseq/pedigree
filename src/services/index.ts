@@ -3,11 +3,14 @@ import { Writable } from 'stream';
 import logger from '../utils/logger';
 import { getAnalysisIdBySpecimenCollectorSampleId } from '../cache';
 import { patchAnalysis } from '../services/song';
-import { getLatestViralAIFileName, streamFileDownload } from './viralAI';
+import { getLatestViralAIFile, streamFileDownload } from './viralAI';
 
-export const startUpdateAnalysisPipeline = function (): Promise<void> {
-  return new Promise<void>(() => {
-    getLatestViralAIFileName().then((fileName: string) => streamFileDownload(fileName, handleData));
+export const startUpdateAnalysisPipeline = function (): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    getLatestViralAIFile()
+      .then((fileName: string) => streamFileDownload(fileName, handleData))
+      .then(() => resolve("finish"))
+      .catch(reject);
   });
 };
 
@@ -16,17 +19,19 @@ export const handleData = new Writable({
   write(chunk, _encoding, callback) {
     const { study_id, specimen_collector_sample_ID, lineage } = chunk;
 
-    logger.debug(`start processing id:${specimen_collector_sample_ID}`);
+    getAnalysisIdBySpecimenCollectorSampleId(specimen_collector_sample_ID).then(async (analysisId: string) => {
 
-    getAnalysisIdBySpecimenCollectorSampleId(specimen_collector_sample_ID).then((analysisId) => {
-      const data = {
-        lineage,
-      };
+      if(analysisId != null) {
+        const data = {
+          lineage,
+        };
+        logger.debug(`got analysisId from cache:${analysisId} with key:${specimen_collector_sample_ID}`);
+        await patchAnalysis(study_id, analysisId, data);
+      } else {
+        logger.error(`specimen_collector_sample_ID:${specimen_collector_sample_ID} not found in cache`)
+      }
 
-      patchAnalysis(study_id, analysisId, data);
-
-      // Comment out to stop Stream
-      // callback();
+      callback();
     });
   },
 });

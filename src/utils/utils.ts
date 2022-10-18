@@ -2,14 +2,24 @@ import { File } from '@google-cloud/storage';
 
 import logger from './logger';
 
-export const getNewestFile = async function (files: Array<File>) {
-  // Get only the newest file by timeCreated
-  logger.debug('files length:' + files.length);
-  return files.reduce(
-    (prevFile: any, currFile: any) =>
-      prevFile && prevFile.metadata.timeCreated >= currFile.metadata.timeCreated
-        ? prevFile
-        : currFile,
-    null,
-  );
+export const getNewestFile = (files: Array<File>): Promise<File> => {
+  return new Promise<File>((resolve) => {
+    // Get only the newest file by timeCreated
+    logger.debug('files length:' + files.length);
+    let newestFile: File = files.reduce(
+      (prevFile: any, currFile: any) =>
+        prevFile && prevFile.metadata.timeCreated >= currFile.metadata.timeCreated
+          ? prevFile
+          : currFile,
+      null,
+    );
+    resolve(newestFile);
+  });
 };
+
+export const getFileName = (file: File): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
+    logger.info(`newest file is ${file.name} ${file.metadata.timeCreated}`);
+    resolve(file.name);
+  })
+}

@@ -2,42 +2,50 @@ import { GetFilesResponse, Storage } from '@google-cloud/storage';
 import { parse } from 'csv';
 
 import { gsBucketName, gsFolderName } from '../config';
-import { getNewestFile } from '../utils/utils';
+import { getNewestFile, getFileName } from '../utils/utils';
 import logger from '../utils/logger';
 import { Writable } from 'stream';
+import { resolve } from 'path';
 
 // Creates a client
 const storage = new Storage();
 
-export const getLatestViralAIFileName = function (): Promise<string> {
-  return new Promise<string>(() => {
-    listFiles(gsBucketName, gsFolderName).then((files: GetFilesResponse) =>
-      getNewestFile(files[0]),
-    );
+export const getLatestViralAIFile = (): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
+    listFiles(gsBucketName, gsFolderName)
+      .then((files: GetFilesResponse) => getNewestFile(files[0]))
+      .then(getFileName)
+      .then((resp) => resolve(resp))
+      .catch(reject);
   });
 };
 
-export const streamFileDownload = async function (
-  fileName: string,
-  handleData: Writable,
-): Promise<void> {
-  logger.info(`Downloading file:${fileName}`);
-  storage
-    .bucket(gsBucketName)
-    .file(fileName)
-    .createReadStream() //stream is created
-    .pipe(
-      parse({
-        delimiter: '\t',
-        columns: true,
-        trim: true,
-      }),
-    )
-    .pipe(handleData)
-    .on('finish', () => {
-      // The file download is complete
-      logger.info(`gs://${gsBucketName}/${fileName} download completed`);
-    });
+export const streamFileDownload = (fileName: string, handleData: Writable): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
+    logger.info(`Downloading file:${fileName}`);
+    storage
+      .bucket(gsBucketName)
+      .file(fileName)
+      .createReadStream() //stream is created
+      .pipe(
+        parse({
+          delimiter: '\t',
+          columns: true,
+          trim: true,
+        }),
+      )
+      .pipe(handleData)
+      .on('finish', () => {
+        // The file download is complete
+        logger.info(`gs://${gsBucketName}/${fileName} download completed`);
+        resolve(`gs://${gsBucketName}/${fileName} download completed`);
+      })
+      .on('error', () => {
+        // The file download is complete
+        logger.error(`gs://${gsBucketName}/${fileName} download failed`);
+        reject(`gs://${gsBucketName}/${fileName} download failed`);
+      });
+  });
 };
 
 const listFiles = async function (
