@@ -19,7 +19,7 @@ export const getNewestFile = (files: Array<File>): Promise<File> => {
 
 export const getFileName = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
-    logger.info(`newest file is ${file.name} ${file.metadata.timeCreated}`);
+    logger.debug(`newest file is ${file.name} ${file.metadata.timeCreated}`);
     resolve(file.name);
   })
 }

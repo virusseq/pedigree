@@ -14,3 +14,4 @@ export const authEnabled = process.env.VAULT_ENABLED !== 'false' // true unless 
 export const redisHost = process.env.REDIS_HOST || 'localhost';
 export const redisPort = parseInt(process.env.REDIS_PORT || '6379');
 export const redisPassword = process.env.REDIS_PASSWORD || '';
+export const analysisTypeVersion = parseInt(process.env.ANALYSIS_TYPE_VERSION || '0');

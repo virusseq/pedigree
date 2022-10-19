@@ -23,6 +23,7 @@ export type Analysis = {
   studyId: string;
   analysisType: AnalysisType;
   samples: Array<Sample>;
+  lineage: string;
 };
 
 export function getAllStudies(): Promise<string[]> {

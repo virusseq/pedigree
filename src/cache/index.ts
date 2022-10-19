@@ -2,9 +2,15 @@ import logger from '../utils/logger';
 import { connectRedis } from './redisConfig';
 import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/song';
 
+export type CacheData = {
+  analysisId: string;
+  lineage: string;
+  analysisTypeVersion: number;
+};
+
 export const startLoadCachePipeline = function (): Promise<void> {
   return new Promise<void>(async (resolve, reject) => {
-    connectRedis()
+    connectRedis() // verify redis connection at start
       .then(getAllStudies)
       .then(async (studies) =>
         Promise.all(
@@ -48,15 +54,16 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
       .then(async (c) => {
         logger.debug(`saveCacheAnalysis - start caching ${analysisList?.length} analysis`);
         for (const analysis of analysisList) {
-          if (
-            analysis.samples.at(0) != undefined &&
-            analysis.samples.at(0)?.submitterSampleId != undefined
-          ) {
-            await c.hSet(
-              `sample:${analysis.samples.at(0)?.submitterSampleId}`,
-              'analysisId',
-              analysis.analysisId,
-            );
+          if (analysis.samples.at(0)?.submitterSampleId != null) {
+            const hsetData: CacheData = {
+              analysisId: analysis.analysisId,
+              analysisTypeVersion: analysis.analysisType.version,
+              lineage: analysis.lineage || '',
+            };
+
+            await c.hSet(`sample:${analysis.samples.at(0)?.submitterSampleId}`, [
+              ...Object.entries(hsetData).flat(),
+            ]);
           }
         }
         logger.debug(`saveCacheAnalysis - finished caching ${analysisList?.length} analysis`);
@@ -66,13 +73,26 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
   });
 }
 
-export const getAnalysisIdBySpecimenCollectorSampleId = (analysisId: string): Promise<string> => {
+export const getCacheByKey = (key: string): Promise<CacheData> => {
   return new Promise((resolve, reject) => {
     connectRedis()
       .then(async (c) => {
-        let cachedData = await c.hGetAll(`sample:${analysisId}`);
-        resolve(cachedData.analysisId);
+        let cachedData = await c.hGetAll(key);
+        if (Object.keys(cachedData).length == 0) {
+          reject(null);
+        }
+        resolve(toCacheData(cachedData));
       })
       .catch((error) => reject(error));
   });
 };
+
+function toCacheData(data: any): CacheData {
+  let cacheData: CacheData = {
+    analysisId: data['analysisId'],
+    analysisTypeVersion: data['analysisTypeVersion'],
+    lineage: data['lineage'],
+  };
+
+  return cacheData;
+}

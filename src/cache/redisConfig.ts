@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { createClient } from 'redis';
 import { redisHost, redisPort, redisPassword } from '../config';
 
@@ -16,6 +17,7 @@ export function connectRedis(): Promise<RedisClient> {
     client.on('error', (err) => reject('Redis Client Error:' + err));
 
     if (!client.isOpen) {
+      logger.debug(`connect redis`);
       await client.connect();
     }
 
@@ -25,6 +27,7 @@ export function connectRedis(): Promise<RedisClient> {
 
 export function disconnectRedis() {
   if (!client.isOpen) {
+    logger.info(`quitting redis`);
     client.quit;
   }
 }
