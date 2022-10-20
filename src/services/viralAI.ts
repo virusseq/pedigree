@@ -5,10 +5,25 @@ import { gsBucketName, gsFolderName } from '../config';
 import { getNewestFile, getFileName } from '../utils/utils';
 import logger from '../utils/logger';
 import { Writable } from 'stream';
-import { resolve } from 'path';
 
 // Creates a client
 const storage = new Storage();
+
+export type TsvColumns = {
+  fasta_header_name: string,
+  study_id: string,
+  specimen_collector_sample_ID: string,
+  consensus_sequence_software_name: string,
+  consensus_sequence_software_version: string,
+  breadth_of_coverage_value: string,
+  depth_of_coverage_value: string,
+  reference_genome_accession: string,
+  lineage: string,
+  scorpio_call: string,
+  pangolin_data_version: string,
+  pangolin_version: string,
+  scorpio_version: string
+}
 
 export const getLatestViralAIFile = (): Promise<string> => {
   return new Promise<string>((resolve, reject) => {

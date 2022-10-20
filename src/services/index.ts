@@ -4,50 +4,44 @@ import logger from '../utils/logger';
 import * as config from '../config';
 import { getCacheByKey, CacheData } from '../cache';
 import { patchAnalysis } from '../services/song';
-import { getLatestViralAIFile, streamFileDownload } from './viralAI';
+import { getLatestViralAIFile, streamFileDownload, TsvColumns } from './viralAI';
 
-export const startUpdateAnalysisPipeline = function (): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+export const startUpdateAnalysisPipeline = function (): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     getLatestViralAIFile()
       .then((fileName: string) => streamFileDownload(fileName, handleData))
-      .then(() => resolve('finish'))
+      .then(() => resolve())
       .catch(reject);
   });
 };
 
 export const handleData = new Writable({
   objectMode: true,
-  write(chunk, _encoding, callback) {
-    const {
-      study_id: sourceStudyId,
-      specimen_collector_sample_ID: sourceSpecimentCSampleId,
-      lineage: sourceLineage,
-    } = chunk;
+  write(source: TsvColumns, _encoding, callback) {
 
-    getCacheByKey(`sample:${sourceSpecimentCSampleId}`)
+    getCacheByKey(`sample:${source.specimen_collector_sample_ID}`)
       .then(async (cache: CacheData) => {
-        if (cache.lineage == sourceLineage) {
+        if (cache.lineage == source.lineage) {
           logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
         } else if (cache.analysisTypeVersion != config.analysisTypeVersion) {
           logger.info(
             `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysisTypeVersion}`,
           );
-        } else if (!cache.analysisId && !sourceLineage) {
-          const data = {
-            sourceLineage,
+        } else if (cache.analysisId && source.lineage) {
+          const payload = {
+            lineage: source.lineage,
           };
-          logger.debug(
-            `got analysisId from cache:${cache.analysisId} with key:${sourceSpecimentCSampleId}`,
-          );
+          await patchAnalysis(source.study_id, cache.analysisId, payload);
         } else {
-          logger.error(`unexpected error on sampleId:${sourceSpecimentCSampleId}`);
+          logger.error(`unexpected error on sampleId:${source.specimen_collector_sample_ID}`);
         }
-        // await patchAnalysis(study_id, cachedAnalyisId.toString(), data);
 
         callback();
       })
-      .catch(() => {
-        logger.error(`specimen_collector_sample_ID:${sourceSpecimentCSampleId} not found in cache`);
+      .catch((err) => {
+        logger.error(
+          `An error occurred with specimen_collector_sample_ID:${source.specimen_collector_sample_ID}. ${err}`,
+        );
         callback();
       });
   },

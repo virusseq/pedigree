@@ -1,4 +1,3 @@
-import logger from '@/utils/logger';
 import { createClient } from 'redis';
 import { redisHost, redisPort, redisPassword } from '../config';
 
@@ -12,22 +11,30 @@ const client = createClient({
   password: redisPassword,
 });
 
-export function connectRedis(): Promise<RedisClient> {
+export const connectRedis = (): Promise<void> => {
   return new Promise(async (resolve, reject) => {
     client.on('error', (err) => reject('Redis Client Error:' + err));
 
     if (!client.isOpen) {
-      logger.debug(`connect redis`);
       await client.connect();
     }
 
-    return resolve(client);
+    return resolve();
   });
 }
 
-export function disconnectRedis() {
+export const disconnectRedis = () => {
   if (!client.isOpen) {
-    logger.info(`quitting redis`);
     client.quit;
   }
+}
+
+export const saveHash = async (key: string, value: Record<string, string | number>) => {
+  return await client.hSet(key, [
+    ...Object.entries(value).flat(),
+  ]);
+}
+
+export const getHash = async (key: string) => {
+  return await client.hGetAll(key);
 }

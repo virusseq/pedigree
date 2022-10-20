@@ -1,5 +1,5 @@
 import logger from '../utils/logger';
-import { connectRedis } from './redisConfig';
+import { connectRedis, saveHash, getHash } from './redisConfig';
 import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/song';
 
 export type CacheData = {
@@ -13,11 +13,9 @@ export const startLoadCachePipeline = function (): Promise<void> {
     connectRedis() // verify redis connection at start
       .then(getAllStudies)
       .then(async (studies) =>
-        Promise.all(
-          studies
-            .filter((study) => study === 'UHTC-ON') // filtering by study only for testing purpose
-            .map((study) => getAndCacheAnalysisByStudy(study)),
-        ).then((resp) => resolve()),
+        Promise.all(studies.map((study) => getAndCacheAnalysisByStudy(study))).then((resp) =>
+          resolve(),
+        ),
       )
       .catch(reject);
   });
@@ -51,7 +49,7 @@ function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
 function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     connectRedis()
-      .then(async (c) => {
+      .then(async () => {
         logger.debug(`saveCacheAnalysis - start caching ${analysisList?.length} analysis`);
         for (const analysis of analysisList) {
           if (analysis.samples.at(0)?.submitterSampleId != null) {
@@ -61,9 +59,7 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
               lineage: analysis.lineage || '',
             };
 
-            await c.hSet(`sample:${analysis.samples.at(0)?.submitterSampleId}`, [
-              ...Object.entries(hsetData).flat(),
-            ]);
+            await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
           }
         }
         logger.debug(`saveCacheAnalysis - finished caching ${analysisList?.length} analysis`);
@@ -76,10 +72,10 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
 export const getCacheByKey = (key: string): Promise<CacheData> => {
   return new Promise((resolve, reject) => {
     connectRedis()
-      .then(async (c) => {
-        let cachedData = await c.hGetAll(key);
+      .then(async () => {
+        let cachedData = await getHash(key);
         if (Object.keys(cachedData).length == 0) {
-          reject(null);
+          reject(`key:${key} not found in cache.`);
         }
         resolve(toCacheData(cachedData));
       })
