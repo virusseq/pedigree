@@ -18,7 +18,6 @@ export const startUpdateAnalysisPipeline = function (): Promise<void> {
 export const handleData = new Writable({
   objectMode: true,
   write(source: TsvColumns, _encoding, callback) {
-
     getCacheByKey(`sample:${source.specimen_collector_sample_ID}`)
       .then(async (cache: CacheData) => {
         if (cache.lineage == source.lineage) {
@@ -29,7 +28,10 @@ export const handleData = new Writable({
           );
         } else if (cache.analysisId && source.lineage) {
           const payload = {
-            lineage: source.lineage,
+            lineage_analysis: {
+              lineage_name: source.lineage,
+              lineage_analysis_software_name: 'pangolin',
+            },
           };
           await patchAnalysis(source.study_id, cache.analysisId, payload);
         } else {
