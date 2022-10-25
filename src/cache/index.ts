@@ -4,8 +4,12 @@ import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/s
 
 export type CacheData = {
   analysisId: string;
-  lineage: string;
   analysisTypeVersion: number;
+  lineageName: string;
+  lineageAnalysisSoftwareName: string;
+  lineageAnalysisSoftwareVersion: string;
+  scorpioCall: string;
+  scorpioVersion: string;
 };
 
 export const startLoadCachePipeline = function (): Promise<void> {
@@ -56,7 +60,11 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
             const hsetData: CacheData = {
               analysisId: analysis.analysisId,
               analysisTypeVersion: analysis.analysisType.version,
-              lineage: analysis.lineage || '',
+              lineageName: analysis.lineage_analysis.lineage_name || '',
+              lineageAnalysisSoftwareName: analysis.lineage_analysis.lineage_analysis_software_name || '',
+              lineageAnalysisSoftwareVersion: analysis.lineage_analysis.lineage_analysis_software_version || '',
+              scorpioCall: analysis.lineage_analysis.scorpio_call || '',
+              scorpioVersion: analysis.lineage_analysis.scorpio_version || ''
             };
 
             await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
@@ -87,7 +95,11 @@ function toCacheData(data: any): CacheData {
   let cacheData: CacheData = {
     analysisId: data['analysisId'],
     analysisTypeVersion: data['analysisTypeVersion'],
-    lineage: data['lineage'],
+    lineageName: data['lineageName'],
+    lineageAnalysisSoftwareName: data['lineageAnalysisSoftwareName'],
+    lineageAnalysisSoftwareVersion: data['lineageAnalysisSoftwareVersion'],
+    scorpioCall: data['scorpioCall'],
+    scorpioVersion: data['scorpioVersion'],
   };
 
   return cacheData;

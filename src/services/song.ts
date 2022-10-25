@@ -20,12 +20,21 @@ export type Sample = {
   submitterSampleId: string;
 };
 
+export type LineageAnalysis = {
+  lineage_name: string;
+  lineage_analysis_software_name: string;
+  lineage_analysis_software_version: string;
+  lineage_analysis_software_data_version: string;
+  scorpio_call: string;
+  scorpio_version: string;
+}
+
 export type Analysis = {
   analysisId: string;
   studyId: string;
   analysisType: AnalysisType;
   samples: Array<Sample>;
-  lineage: string;
+  lineage_analysis: LineageAnalysis;
 };
 
 export function getAllStudies(): Promise<string[]> {

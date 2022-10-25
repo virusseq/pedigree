@@ -42,7 +42,7 @@ export const handleData = new Writable({
 });
 
 function isValidData(source: TsvColumns, cache: CacheData): boolean {
-  if (cache.lineage == source.lineage) {
+  if (cache.lineageName == source.lineage) {
     logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
     return false;
   } else if (cache.analysisTypeVersion != config.analysisTypeVersion) {
