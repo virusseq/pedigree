@@ -20,13 +20,7 @@ export const handleData = new Writable({
   write(source: TsvColumns, _encoding, callback) {
     getCacheByKey(`sample:${source.specimen_collector_sample_ID}`)
       .then(async (cache: CacheData) => {
-        if (cache.lineage == source.lineage) {
-          logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
-        } else if (cache.analysisTypeVersion != config.analysisTypeVersion) {
-          logger.info(
-            `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysisTypeVersion}`,
-          );
-        } else if (cache.analysisId && source.lineage) {
+        if (isValidData(source, cache)) {
           const payload = {
             lineage_analysis: {
               lineage_name: source.lineage,
@@ -34,8 +28,6 @@ export const handleData = new Writable({
             },
           };
           await patchAnalysis(source.study_id, cache.analysisId, payload);
-        } else {
-          logger.error(`unexpected error on sampleId:${source.specimen_collector_sample_ID}`);
         }
 
         callback();
@@ -48,3 +40,22 @@ export const handleData = new Writable({
       });
   },
 });
+
+function isValidData(source: TsvColumns, cache: CacheData): boolean {
+  if (cache.lineage == source.lineage) {
+    logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
+    return false;
+  } else if (cache.analysisTypeVersion != config.analysisTypeVersion) {
+    logger.info(
+      `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysisTypeVersion}`,
+    );
+    return false;
+  } else if (!cache?.analysisId || !source?.lineage) {
+    logger.error(
+      `Invalid Cache or Source data. AnalysisId:${cache?.analysisId} lineage:${!source?.lineage}`,
+    );
+    return false;
+  }
+
+  return true;
+}
