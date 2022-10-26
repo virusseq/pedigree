@@ -1,4 +1,5 @@
 import egoTokenUtils from '@icgc-argo/ego-token-utils';
+import urlJoin from 'url-join';
 
 import logger from '../utils/logger';
 import {
@@ -39,7 +40,7 @@ const getApplicationJwt = async (
   applicationCredentials: EgoApplicationCredential,
 ): Promise<string> =>
   new Promise((resolve, reject) => {
-    const url = `${authEgoUrl}/oauth/token?grant_type=client_credentials`;
+    const url = urlJoin(authEgoUrl, '/oauth/token?grant_type=client_credentials');
     logger.debug(`fetching token from Ego ${url}`);
 
     return axios
