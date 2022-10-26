@@ -30,11 +30,11 @@ export type LineageAnalysis = {
 }
 
 export type Analysis = {
-  analysisId: string;
-  studyId: string;
-  analysisType: AnalysisType;
-  samples: Array<Sample>;
-  lineage_analysis: LineageAnalysis;
+  analysisId?: string;
+  studyId?: string;
+  analysisType?: AnalysisType;
+  samples?: Array<Sample>;
+  lineage_analysis?: LineageAnalysis;
 };
 
 export function getAllStudies(): Promise<string[]> {

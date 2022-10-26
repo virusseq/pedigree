@@ -3,8 +3,10 @@ import { Writable } from 'stream';
 import logger from '../utils/logger';
 import * as config from '../config';
 import { getCacheByKey, CacheData } from '../cache';
-import { patchAnalysis } from '../services/song';
+import { Analysis, patchAnalysis } from '../services/song';
 import { getLatestViralAIFile, streamFileDownload, TsvColumns } from './viralAI';
+
+const lineageSoftwareName = 'pangolin';
 
 export const startUpdateAnalysisPipeline = function (): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -21,10 +23,14 @@ export const handleData = new Writable({
     getCacheByKey(`sample:${source.specimen_collector_sample_ID}`)
       .then(async (cache: CacheData) => {
         if (isValidData(source, cache)) {
-          const payload = {
+          const payload: Analysis = {
             lineage_analysis: {
               lineage_name: source.lineage,
-              lineage_analysis_software_name: 'pangolin',
+              lineage_analysis_software_name: lineageSoftwareName,
+              lineage_analysis_software_version: source.pangolin_version,
+              lineage_analysis_software_data_version: source.pangolin_data_version,
+              scorpio_call: source.scorpio_call,
+              scorpio_version: source.scorpio_version,
             },
           };
           await patchAnalysis(source.study_id, cache.analysisId, payload);

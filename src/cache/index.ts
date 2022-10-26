@@ -39,13 +39,15 @@ function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
       if (total > 0) {
         try {
           await saveCacheAnalysis(resp.analyses);
-          logger.info(`progress ${studyId} cached ${offset} of ${total}`);
+          logger.info(
+            `Cashing progress study ${studyId}: ${Math.round((offset / total) * 100 * 100) / 100}%`,
+          );
         } catch (error) {
-          logger.error(`Error on saveCacheAnalysis: ${error}`);
+          logger.error(`Cashing Error on saveCacheAnalysis: ${error}`);
         }
       }
     }
-    logger.info(`finished caching ${studyId} total of ${total} records`);
+    logger.info(`Finished caching ${studyId} total of ${total} records`);
     resolve(studyId);
   });
 }
@@ -56,15 +58,17 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
       .then(async () => {
         logger.debug(`saveCacheAnalysis - start caching ${analysisList?.length} analysis`);
         for (const analysis of analysisList) {
-          if (analysis.samples.at(0)?.submitterSampleId != null) {
+          if (analysis.samples?.at(0)?.submitterSampleId != null) {
             const hsetData: CacheData = {
-              analysisId: analysis.analysisId,
-              analysisTypeVersion: analysis.analysisType.version,
-              lineageName: analysis.lineage_analysis.lineage_name || '',
-              lineageAnalysisSoftwareName: analysis.lineage_analysis.lineage_analysis_software_name || '',
-              lineageAnalysisSoftwareVersion: analysis.lineage_analysis.lineage_analysis_software_version || '',
-              scorpioCall: analysis.lineage_analysis.scorpio_call || '',
-              scorpioVersion: analysis.lineage_analysis.scorpio_version || ''
+              analysisId: analysis.analysisId || '',
+              analysisTypeVersion: analysis.analysisType?.version || 0,
+              lineageName: analysis.lineage_analysis?.lineage_name || '',
+              lineageAnalysisSoftwareName:
+                analysis.lineage_analysis?.lineage_analysis_software_name || '',
+              lineageAnalysisSoftwareVersion:
+                analysis.lineage_analysis?.lineage_analysis_software_version || '',
+              scorpioCall: analysis.lineage_analysis?.scorpio_call || '',
+              scorpioVersion: analysis.lineage_analysis?.scorpio_version || '',
             };
 
             await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);

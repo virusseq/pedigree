@@ -8,9 +8,9 @@
     "dev": "ts-node ./src/index.ts",
     "dev:update_analysis": "ts-node ./src/index.ts --profile=updateAnalysis",
     "dev:load_cache": "ts-node ./src/index.ts --profile=loadCache",
-    "dev:nodemon": "nodemon -e js,json,ts -x ts-node ./src/index.ts",
-    "start:local": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js",
-    "start:prod": "node -r tsconfig-paths/register index.js",
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js",
+    "start:update_analysis": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js --profile=updateAnalysis",
+    "start:load_cache": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js --profile=loadCache",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

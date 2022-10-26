@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config({
-  debug: process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true',
+  debug: process.env.DEBUG === 'true',
 });
 import logger from '@/utils/logger';
 import minimist from 'minimist';
@@ -16,11 +16,11 @@ async function runScript(args: any) {
   logger.info(`Starting script with profile=${argv.profile}`);
   try {
     switch (argv.profile) {
-      case 'loadcache':
+      case 'loadCache':
         // this profile will save in cache all current analysis
         await startLoadCachePipeline();
         break;
-      case 'updateanalysis':
+      case 'updateAnalysis':
         // this profile will update analysis data using existing cache.
         // if cache is not up to date it will update cache
         await startUpdateAnalysisPipeline();
