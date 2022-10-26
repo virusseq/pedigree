@@ -4,8 +4,12 @@ import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/s
 
 export type CacheData = {
   analysisId: string;
-  lineage: string;
   analysisTypeVersion: number;
+  lineageName: string;
+  lineageAnalysisSoftwareName: string;
+  lineageAnalysisSoftwareVersion: string;
+  scorpioCall: string;
+  scorpioVersion: string;
 };
 
 export const startLoadCachePipeline = function (): Promise<void> {
@@ -35,13 +39,15 @@ function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
       if (total > 0) {
         try {
           await saveCacheAnalysis(resp.analyses);
-          logger.info(`progress ${studyId} cached ${offset} of ${total}`);
+          logger.info(
+            `Cashing progress study ${studyId}: ${Math.round((offset / total) * 100 * 100) / 100}%`,
+          );
         } catch (error) {
-          logger.error(`Error on saveCacheAnalysis: ${error}`);
+          logger.error(`Cashing Error on saveCacheAnalysis: ${error}`);
         }
       }
     }
-    logger.info(`finished caching ${studyId} total of ${total} records`);
+    logger.info(`Finished caching ${studyId} total of ${total} records`);
     resolve(studyId);
   });
 }
@@ -52,11 +58,17 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
       .then(async () => {
         logger.debug(`saveCacheAnalysis - start caching ${analysisList?.length} analysis`);
         for (const analysis of analysisList) {
-          if (analysis.samples.at(0)?.submitterSampleId != null) {
+          if (analysis.samples?.at(0)?.submitterSampleId != null) {
             const hsetData: CacheData = {
-              analysisId: analysis.analysisId,
-              analysisTypeVersion: analysis.analysisType.version,
-              lineage: analysis.lineage || '',
+              analysisId: analysis.analysisId || '',
+              analysisTypeVersion: analysis.analysisType?.version || 0,
+              lineageName: analysis.lineage_analysis?.lineage_name || '',
+              lineageAnalysisSoftwareName:
+                analysis.lineage_analysis?.lineage_analysis_software_name || '',
+              lineageAnalysisSoftwareVersion:
+                analysis.lineage_analysis?.lineage_analysis_software_version || '',
+              scorpioCall: analysis.lineage_analysis?.scorpio_call || '',
+              scorpioVersion: analysis.lineage_analysis?.scorpio_version || '',
             };
 
             await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
@@ -87,7 +99,11 @@ function toCacheData(data: any): CacheData {
   let cacheData: CacheData = {
     analysisId: data['analysisId'],
     analysisTypeVersion: data['analysisTypeVersion'],
-    lineage: data['lineage'],
+    lineageName: data['lineageName'],
+    lineageAnalysisSoftwareName: data['lineageAnalysisSoftwareName'],
+    lineageAnalysisSoftwareVersion: data['lineageAnalysisSoftwareVersion'],
+    scorpioCall: data['scorpioCall'],
+    scorpioVersion: data['scorpioVersion'],
   };
 
   return cacheData;

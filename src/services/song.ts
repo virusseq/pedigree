@@ -1,4 +1,6 @@
 import axios from 'axios';
+import urlJoin from 'url-join';
+
 import logger from '../utils/logger';
 import { song_endpoint } from '../config';
 import { getEgoToken } from '../security/ego';
@@ -18,18 +20,28 @@ export type Sample = {
   submitterSampleId: string;
 };
 
+export type LineageAnalysis = {
+  lineage_name: string;
+  lineage_analysis_software_name: string;
+  lineage_analysis_software_version: string;
+  lineage_analysis_software_data_version: string;
+  scorpio_call: string;
+  scorpio_version: string;
+}
+
 export type Analysis = {
-  analysisId: string;
-  studyId: string;
-  analysisType: AnalysisType;
-  samples: Array<Sample>;
-  lineage: string;
+  analysisId?: string;
+  studyId?: string;
+  analysisType?: AnalysisType;
+  samples?: Array<Sample>;
+  lineage_analysis?: LineageAnalysis;
 };
 
 export function getAllStudies(): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
+    const fullUrl = urlJoin(song_endpoint, '/studies/all');
     return axios
-      .get(`${song_endpoint}/studies/all`)
+      .get(fullUrl)
       .then((resp) => {
         logger.info(`found ${resp.data?.length} studies`);
         resolve(resp.data);
@@ -49,11 +61,14 @@ export function getAnalysisByStudyPaginated(
     `getAnalysisByStudyPaginated - fetching analysis for study:${studyId} limit:${limit} offset:${offset}`,
   );
 
-  const fullEndpoint = `${song_endpoint}/studies/${studyId}/analysis/paginated?analysisStates=${analysisState}&limit=${limit}&offset=${offset}`;
+  const fullUrl = urlJoin(
+    song_endpoint,
+    `/studies/${studyId}/analysis/paginated?analysisStates=${analysisState}&limit=${limit}&offset=${offset}`,
+  );
 
   return new Promise<GetAnalysesForStudyResponse>((resolve, reject) => {
     return axios
-      .get(fullEndpoint)
+      .get(fullUrl)
       .then((resp) => {
         resolve(resp.data);
       })
@@ -63,7 +78,7 @@ export function getAnalysisByStudyPaginated(
 
 export function patchAnalysis(studyId: string, analysisId: string, data: any): Promise<string> {
   return new Promise<string>(async (resolve, reject) => {
-    const fullUrl = `${song_endpoint}/studies/${studyId}/analysis/${analysisId}`;
+    const fullUrl = urlJoin(song_endpoint, `/studies/${studyId}/analysis/${analysisId}`);
 
     logger.debug(`calling PATCH ${fullUrl}`);
 
