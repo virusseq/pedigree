@@ -19,7 +19,7 @@
 
 import { createLogger, LoggerOptions, transports, format } from 'winston';
 
-import { debug } from '@/config';
+import { config } from '../config';
 const { combine, timestamp, colorize, printf } = format;
 const options: LoggerOptions = {
   format: combine(
@@ -29,13 +29,13 @@ const options: LoggerOptions = {
   ),
   transports: [
     new transports.Console({
-      level: debug ? 'debug' : 'info',
+      level: config.server.debug ? 'debug' : 'info',
     }),
   ],
 };
 
 const logger = createLogger(options);
-if (debug) {
+if (config.server.debug) {
   logger.debug('Logging initialized at debug level');
 }
 

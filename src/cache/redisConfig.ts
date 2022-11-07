@@ -1,14 +1,12 @@
 import { createClient } from 'redis';
-import { redisHost, redisPort, redisPassword } from '../config';
-
-type RedisClient = ReturnType<typeof createClient>;
+import { config } from '../config';
 
 const client = createClient({
   socket: {
-    host: redisHost,
-    port: redisPort,
+    host: config.redis.host,
+    port: config.redis.port,
   },
-  password: redisPassword,
+  password: config.redis.password,
 });
 
 export const connectRedis = (): Promise<void> => {
