@@ -24,6 +24,9 @@ export type LineageAnalysis = {
   lineage_name: string;
   lineage_analysis_software_name: string;
   lineage_analysis_software_version: string;
+  lineage_analysis_software_data_version: string;
+  scorpio_call: string;
+  scorpio_version: string;
 };
 
 export type Analysis = {

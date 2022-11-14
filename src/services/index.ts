@@ -27,7 +27,10 @@ export const handleData = new Writable({
             lineage_analysis: {
               lineage_name: source.lineage,
               lineage_analysis_software_name: lineageSoftwareName,
-              lineage_analysis_software_version: source.pangolin_version
+              lineage_analysis_software_version: source.pangolin_version,
+              lineage_analysis_software_data_version: source.pangolin_data_version,
+              scorpio_call: source.scorpio_call,
+              scorpio_version: source.scorpio_version
             },
           };
           await patchAnalysis(source.study_id, cache.analysisId, payload);

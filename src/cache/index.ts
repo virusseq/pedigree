@@ -8,6 +8,9 @@ export type CacheData = {
   lineageName: string;
   lineageAnalysisSoftwareName: string;
   lineageAnalysisSoftwareVersion: string;
+  lineageAnalysisSoftwareDataVersion: string;
+  scorpioCall: string;
+  scorpioVersion: string;
 };
 
 export const startLoadCachePipeline = function (): Promise<void> {
@@ -64,7 +67,10 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
               lineageAnalysisSoftwareName:
                 analysis.lineage_analysis?.lineage_analysis_software_name || '',
               lineageAnalysisSoftwareVersion:
-                analysis.lineage_analysis?.lineage_analysis_software_version || ''
+                analysis.lineage_analysis?.lineage_analysis_software_version || '',
+              lineageAnalysisSoftwareDataVersion: analysis.lineage_analysis?.lineage_analysis_software_data_version || '',
+              scorpioCall: analysis.lineage_analysis?.scorpio_call || '',
+              scorpioVersion: analysis.lineage_analysis?.scorpio_version || ''
             };
 
             await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
@@ -97,7 +103,10 @@ function toCacheData(data: any): CacheData {
     analysisTypeVersion: data['analysisTypeVersion'],
     lineageName: data['lineageName'],
     lineageAnalysisSoftwareName: data['lineageAnalysisSoftwareName'],
-    lineageAnalysisSoftwareVersion: data['lineageAnalysisSoftwareVersion']
+    lineageAnalysisSoftwareVersion: data['lineageAnalysisSoftwareVersion'],
+    lineageAnalysisSoftwareDataVersion: data['lineageAnalysisSoftwareDataVersion'],
+    scorpioCall: data['scorpioCall'],
+    scorpioVersion: data['scorpioVersion']
   };
 
   return cacheData;
