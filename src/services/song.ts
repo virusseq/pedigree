@@ -1,8 +1,9 @@
 import axios from 'axios';
 import urlJoin from 'url-join';
+import axiosRetry from 'axios-retry';
 
 import logger from '../utils/logger';
-import { song_endpoint } from '../config';
+import { config } from '../config';
 import { getEgoToken } from '../security/ego';
 
 export type GetAnalysesForStudyResponse = {
@@ -27,7 +28,7 @@ export type LineageAnalysis = {
   lineage_analysis_software_data_version: string;
   scorpio_call: string;
   scorpio_version: string;
-}
+};
 
 export type Analysis = {
   analysisId?: string;
@@ -37,9 +38,13 @@ export type Analysis = {
   lineage_analysis?: LineageAnalysis;
 };
 
+// Exponential back-off retry delay between requests
+axiosRetry(axios, { retries: config.server.apiRetries, retryDelay: axiosRetry.exponentialDelay });
+
+
 export function getAllStudies(): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
-    const fullUrl = urlJoin(song_endpoint, '/studies/all');
+    const fullUrl = urlJoin(config.song.endpoint, '/studies/all');
     return axios
       .get(fullUrl)
       .then((resp) => {
@@ -62,7 +67,7 @@ export function getAnalysisByStudyPaginated(
   );
 
   const fullUrl = urlJoin(
-    song_endpoint,
+    config.song.endpoint,
     `/studies/${studyId}/analysis/paginated?analysisStates=${analysisState}&limit=${limit}&offset=${offset}`,
   );
 
@@ -78,9 +83,9 @@ export function getAnalysisByStudyPaginated(
 
 export function patchAnalysis(studyId: string, analysisId: string, data: any): Promise<string> {
   return new Promise<string>(async (resolve, reject) => {
-    const fullUrl = urlJoin(song_endpoint, `/studies/${studyId}/analysis/${analysisId}`);
+    const fullUrl = urlJoin(config.song.endpoint, `/studies/${studyId}/analysis/${analysisId}`);
 
-    logger.debug(`calling PATCH ${fullUrl}`);
+    logger.debug(`calling PATCH ${fullUrl} request: ${JSON.stringify(data)}`);
 
     return axios
       .patch(fullUrl, data, {
@@ -89,10 +94,8 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
         },
       })
       .then((msg) => {
-        logger.debug(
-          `analysisId:${analysisId} status:${msg.status} statusText:${
-            msg.statusText
-          } data:${JSON.stringify(msg.data)}`,
+        logger.info(
+          `analysisId:${analysisId} status:${msg.status}}`,
         );
         resolve('OK');
       })

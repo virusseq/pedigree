@@ -2,14 +2,7 @@ import egoTokenUtils from '@icgc-argo/ego-token-utils';
 import urlJoin from 'url-join';
 
 import logger from '../utils/logger';
-import {
-  authEgoClientId,
-  authEgoClientSecret,
-  authJwtKey,
-  authJwtKeyUrl,
-  authEnabled,
-  authEgoUrl,
-} from '../config';
+import { config } from '../config';
 import axios from 'axios';
 
 let authClient: AuthClient;
@@ -40,7 +33,7 @@ const getApplicationJwt = async (
   applicationCredentials: EgoApplicationCredential,
 ): Promise<string> =>
   new Promise((resolve, reject) => {
-    const url = urlJoin(authEgoUrl, '/oauth/token?grant_type=client_credentials');
+    const url = urlJoin(config.ego.url, '/oauth/token?grant_type=client_credentials');
     logger.debug(`fetching token from Ego ${url}`);
 
     return axios
@@ -77,22 +70,17 @@ const getApplicationJwt = async (
 
 const getPublicKey = async (): Promise<string> =>
   new Promise((resolve, reject) => {
-    if (authJwtKey) {
-      return authJwtKey;
-    }
-
-    if (authEnabled) {
-      throw new Error(`Missing configuration properties to acquire Ego Public Key`);
-    }
-
-    if (authJwtKeyUrl) {
-      // TODO: cache public key
+    if (config.jwt.key) {
+      return config.jwt.key;
+    }else if (config.jwt.url) {
       return axios
-        .get(authJwtKeyUrl)
+        .get(config.jwt.url)
         .then((response) => resolve(response.data))
         .catch((err) =>
           reject(new Error(`Ego public key fetch failed with non-200 response: ${err}`)),
         );
+    } else {
+      throw new Error(`Missing configuration properties to acquire Ego Public Key`);
     }
   });
 
@@ -110,8 +98,8 @@ const createAuthClient = async () => {
   const tokenUtils = egoTokenUtils(publicKey);
 
   const appCredentials = {
-    clientId: authEgoClientId,
-    clientSecret: authEgoClientSecret,
+    clientId: config.ego.clientId,
+    clientSecret: config.ego.clientSecret,
   } as EgoApplicationCredential;
 
   const getAuth = async () => {

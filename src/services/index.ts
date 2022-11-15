@@ -1,7 +1,7 @@
 import { Writable } from 'stream';
 
 import logger from '../utils/logger';
-import * as config from '../config';
+import { config } from '../config';
 import { getCacheByKey, CacheData } from '../cache';
 import { Analysis, patchAnalysis } from '../services/song';
 import { getLatestViralAIFile, streamFileDownload, TsvColumns } from './viralAI';
@@ -30,7 +30,7 @@ export const handleData = new Writable({
               lineage_analysis_software_version: source.pangolin_version,
               lineage_analysis_software_data_version: source.pangolin_data_version,
               scorpio_call: source.scorpio_call,
-              scorpio_version: source.scorpio_version,
+              scorpio_version: source.scorpio_version
             },
           };
           await patchAnalysis(source.study_id, cache.analysisId, payload);
@@ -51,9 +51,9 @@ function isValidData(source: TsvColumns, cache: CacheData): boolean {
   if (cache.lineageName == source.lineage) {
     logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
     return false;
-  } else if (cache.analysisTypeVersion != config.analysisTypeVersion) {
+  } else if (cache.analysisTypeVersion != config.analysis.typeVersion) {
     logger.info(
-      `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysisTypeVersion}`,
+      `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysis.typeVersion}`,
     );
     return false;
   } else if (!cache?.analysisId || !source?.lineage) {
