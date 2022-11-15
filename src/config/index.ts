@@ -1,6 +1,7 @@
 export const config = {
   server: {
     debug: process.env.DEBUG === 'true',
+    apiRetries: parseInt(process.env.API_RETRIES || '3')
   },
   gs: {
     bucket: process.env.GS_BUCKET_NAME || '',

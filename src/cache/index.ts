@@ -17,10 +17,15 @@ export const startLoadCachePipeline = function (): Promise<void> {
   return new Promise<void>(async (resolve, reject) => {
     connectRedis() // verify redis connection at start
       .then(getAllStudies)
-      .then(async (studies) =>
-        Promise.all(studies.map((study) => getAndCacheAnalysisByStudy(study))).then((resp) =>
-          resolve(),
-        ),
+      .then(async studies =>
+        {
+          for(const [index, study] of studies.entries()){
+            logger.info(`Start fetching ${index+1}/${studies.length} studyId: ${study}`)
+            await getAndCacheAnalysisByStudy(study)
+            logger.info(`End fetching ${index+1}/${studies.length} studyId: ${study}`)
+          }
+          resolve();
+        }
       )
       .catch(reject);
   });

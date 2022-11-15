@@ -1,5 +1,6 @@
 import axios from 'axios';
 import urlJoin from 'url-join';
+import axiosRetry from 'axios-retry';
 
 import logger from '../utils/logger';
 import { config } from '../config';
@@ -36,6 +37,10 @@ export type Analysis = {
   samples?: Array<Sample>;
   lineage_analysis?: LineageAnalysis;
 };
+
+// Exponential back-off retry delay between requests
+axiosRetry(axios, { retries: config.server.apiRetries, retryDelay: axiosRetry.exponentialDelay });
+
 
 export function getAllStudies(): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
