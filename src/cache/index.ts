@@ -8,6 +8,7 @@ export type CacheData = {
   lineageName: string;
   lineageAnalysisSoftwareName: string;
   lineageAnalysisSoftwareVersion: string;
+  lineageAnalysisSoftwareDataVersion: string;
   scorpioCall: string;
   scorpioVersion: string;
 };
@@ -16,10 +17,15 @@ export const startLoadCachePipeline = function (): Promise<void> {
   return new Promise<void>(async (resolve, reject) => {
     connectRedis() // verify redis connection at start
       .then(getAllStudies)
-      .then(async (studies) =>
-        Promise.all(studies.map((study) => getAndCacheAnalysisByStudy(study))).then((resp) =>
-          resolve(),
-        ),
+      .then(async studies =>
+        {
+          for(const [index, study] of studies.entries()){
+            logger.info(`Start fetching ${index+1}/${studies.length} studyId: ${study}`)
+            await getAndCacheAnalysisByStudy(study)
+            logger.info(`End fetching ${index+1}/${studies.length} studyId: ${study}`)
+          }
+          resolve();
+        }
       )
       .catch(reject);
   });
@@ -67,8 +73,9 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
                 analysis.lineage_analysis?.lineage_analysis_software_name || '',
               lineageAnalysisSoftwareVersion:
                 analysis.lineage_analysis?.lineage_analysis_software_version || '',
+              lineageAnalysisSoftwareDataVersion: analysis.lineage_analysis?.lineage_analysis_software_data_version || '',
               scorpioCall: analysis.lineage_analysis?.scorpio_call || '',
-              scorpioVersion: analysis.lineage_analysis?.scorpio_version || '',
+              scorpioVersion: analysis.lineage_analysis?.scorpio_version || ''
             };
 
             await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
@@ -102,8 +109,9 @@ function toCacheData(data: any): CacheData {
     lineageName: data['lineageName'],
     lineageAnalysisSoftwareName: data['lineageAnalysisSoftwareName'],
     lineageAnalysisSoftwareVersion: data['lineageAnalysisSoftwareVersion'],
+    lineageAnalysisSoftwareDataVersion: data['lineageAnalysisSoftwareDataVersion'],
     scorpioCall: data['scorpioCall'],
-    scorpioVersion: data['scorpioVersion'],
+    scorpioVersion: data['scorpioVersion']
   };
 
   return cacheData;
