@@ -2,11 +2,12 @@ import * as dotenv from 'dotenv';
 dotenv.config({
   debug: process.env.DEBUG === 'true',
 });
-import logger from '@/utils/logger';
 import minimist from 'minimist';
-import { startLoadCachePipeline } from './cache';
-import { disconnectRedis } from './cache/redisConfig';
-import { startUpdateAnalysisPipeline } from './services/index';
+
+import logger from '@/utils/logger';
+import { startLoadCachePipeline } from '@/cache';
+import { disconnectRedis } from '@/cache/redisConfig';
+import { startUpdateAnalysisPipeline } from '@/services/index';
 
 /**
  * Main Function - All work done here

@@ -1,9 +1,9 @@
 import { Writable } from 'stream';
 
-import logger from '../utils/logger';
-import { config } from '../config';
-import { getCacheByKey, CacheData } from '../cache';
-import { Analysis, patchAnalysis } from '../services/song';
+import logger from '@/utils/logger';
+import { config } from '@/config';
+import { getCacheByKey, CacheData } from '@/cache';
+import { Analysis, patchAnalysis } from '@/services/song';
 import { getLatestViralAIFile, streamFileDownload, TsvColumns } from './viralAI';
 
 const lineageSoftwareName = 'pangolin';

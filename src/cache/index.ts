@@ -1,6 +1,6 @@
-import logger from '../utils/logger';
+import logger from '@/utils/logger';
+import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from '@/services/song';
 import { connectRedis, saveHash, getHash } from './redisConfig';
-import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from 'services/song';
 
 export type CacheData = {
   analysisId: string;

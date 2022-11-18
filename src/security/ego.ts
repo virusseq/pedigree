@@ -1,9 +1,9 @@
-import egoTokenUtils from '@icgc-argo/ego-token-utils';
 import urlJoin from 'url-join';
-
-import logger from '../utils/logger';
-import { config } from '../config';
 import axios from 'axios';
+import egoTokenUtils from '@icgc-argo/ego-token-utils';
+
+import logger from '@/utils/logger';
+import { config } from '@/config';
 
 let authClient: AuthClient;
 

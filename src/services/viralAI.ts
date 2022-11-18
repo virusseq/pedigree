@@ -1,10 +1,10 @@
-import { GetFilesResponse, Storage } from '@google-cloud/storage';
 import { parse } from 'csv';
-
-import { config } from '../config';
-import { getNewestFile, getFileName } from '../utils/utils';
-import logger from '../utils/logger';
 import { Writable } from 'stream';
+import { GetFilesResponse, Storage } from '@google-cloud/storage';
+
+import { config } from '@/config';
+import { getNewestFile, getFileName } from '@/utils/utils';
+import logger from '@/utils/logger';
 
 // Creates a client
 const storage = new Storage();

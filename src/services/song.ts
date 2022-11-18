@@ -2,9 +2,9 @@ import axios from 'axios';
 import urlJoin from 'url-join';
 import axiosRetry from 'axios-retry';
 
-import logger from '../utils/logger';
-import { config } from '../config';
-import { getEgoToken } from '../security/ego';
+import logger from '@/utils/logger';
+import { config } from '@/config';
+import { getEgoToken } from '@/security/ego';
 
 export type GetAnalysesForStudyResponse = {
   analyses: Array<Analysis>;
