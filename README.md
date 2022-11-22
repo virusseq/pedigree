@@ -23,7 +23,7 @@ This script has been tested using NodeJS v^16.
 | EGO_CLIENT_SECRET  | String  | Ego Client Secret |
 | EGO_URL  | String  | Ego URL API |
 | JWT_KEY  | String  | Public key. This variable is optional if JWT_KEY_URL is set |
-| JWT_KEY_URL  | String  | URL to fetch the public key. This variable is option if JWT_KEY is set |
+| JWT_KEY_URL  | String  | URL to fetch the public key. This variable is optional if JWT_KEY is set |
 | REDIS_HOST  | String  | Default `localhost` |
 | REDIS_PORT  | Number  | Default `6379` |
 | REDIS_PASSWORD  | String  | Redis password |
