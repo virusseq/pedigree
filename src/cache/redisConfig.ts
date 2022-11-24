@@ -12,7 +12,7 @@ const client = createClient({
 
 export const connectRedis = (): Promise<void> => {
   return new Promise(async (resolve, reject) => {
-    client.on('error', (err) => reject('Redis Client Error:' + err));
+    client.on('error', (err) => reject(new Error(`Redis Client Error: ${err}`)));
 
     if (!client.isOpen) {
       await client.connect();

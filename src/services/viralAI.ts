@@ -31,7 +31,7 @@ export const getLatestViralAIFile = (): Promise<string> => {
       .then((files: GetFilesResponse) => getNewestFile(files[0]))
       .then(getFileName)
       .then((resp) => resolve(resp))
-      .catch(reject);
+      .catch(err => reject(new Error(`ViralAI error:${err}`)));
   });
 };
 
@@ -58,7 +58,7 @@ export const streamFileDownload = (fileName: string, handleData: Writable): Prom
       .on('error', () => {
         // The file download is complete
         logger.error(`gs://${config.gs.bucket}/${fileName} download failed`);
-        reject(`gs://${config.gs.bucket}/${fileName} download failed`);
+        reject(new Error(`gs://${config.gs.bucket}/${fileName} download failed`));
       });
   });
 };
