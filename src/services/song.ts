@@ -51,7 +51,7 @@ export function getAllStudies(): Promise<string[]> {
         logger.info(`found ${resp.data?.length} studies`);
         resolve(resp.data);
       })
-      .catch((err) => reject(new Error(`SONG API error:${err}`)));
+      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
   });
 }
 
@@ -77,7 +77,7 @@ export function getAnalysisByStudyPaginated(
       .then((resp) => {
         resolve(resp.data);
       })
-      .catch((err) => reject(new Error(`SONG API error:${err}`)));
+      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
   });
 }
 
@@ -99,6 +99,6 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
         );
         resolve('OK');
       })
-      .catch((err) => reject(new Error(`SONG API error:${err}`)));
+      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
   });
 }
