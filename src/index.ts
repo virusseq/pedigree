@@ -3,25 +3,33 @@ dotenv.config({
   debug: process.env.DEBUG === 'true',
 });
 import minimist from 'minimist';
+import _ from 'lodash';
 
 import logger from '@/utils/logger';
 import { startLoadCachePipeline } from '@/cache';
 import { disconnectRedis } from '@/cache/redisConfig';
 import { startUpdateAnalysisPipeline } from '@/services/index';
 
+enum Profiles {
+  LOADCACHE = 'LOADCACHE',
+  UPDATECACHE = 'UPDATEANALYSIS'
+}
+
 /**
  * Main Function - All work done here
  */
 async function runScript(args: any) {
   let argv = minimist(args);
-  logger.info(`Starting script with profile=${argv.profile}`);
+  let profile = _.toUpper(argv.profile);
+
+  logger.info(`Starting script with profile=${profile}`);
   try {
-    switch (argv.profile) {
-      case 'loadCache':
+    switch (profile) {
+      case Profiles.LOADCACHE:
         // this profile will save in cache all current analysis
         await startLoadCachePipeline();
         break;
-      case 'updateAnalysis':
+      case Profiles.UPDATECACHE:
         // this profile will update analysis data using existing cache.
         // if cache is not up to date it will update cache
         await startUpdateAnalysisPipeline();
@@ -37,7 +45,7 @@ async function runScript(args: any) {
     logger.error(`Error:${error}`);
   } finally {
     disconnectRedis();
-    process.exit(1);
+    process.exit();
   }
 }
 
