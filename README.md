@@ -7,8 +7,8 @@ This script has been tested using NodeJS v^16.
 
 ### Local configuration
 1. `npm ci`
-2. Copy [.env.schema](./.env.schema) file to a new file named `.env`. Populate all fields. See description of env variables in the **Configuration section**
-3. `npm run dev`
+2. Copy [.env.schema](./.env.schema) file to a new file named `.env`. Populate all fields. See description of env variables in the **Environment variables** section.
+3. `npm run dev` or `npm run dev:[profile]` See description of profiles in the **Profiles** section
 
 ### Environment variables
 
@@ -29,3 +29,11 @@ This script has been tested using NodeJS v^16.
 | REDIS_PASSWORD  | String  | Redis password |
 | ANALYSIS_TYPE_VERSION  | Number  | Default `1`. Process only the Analysis within this schema version.   |
 | API_RETRIES  | Number  | Default `3`. Retries when API call fails |
+
+### Profiles
+
+| Profile  | DESCRIPTION |
+| ------------- | ------------- |
+| loadCache  | This profile will only update Pedigree cache DB  |
+| updateAnalysis  | Synchronize VirusSeq data using the already existing Pedigree cache DB   |
+|  | Not specifying a profile will do `loadCache` and then do `updateAnalaysis`  (Recommended)  |
