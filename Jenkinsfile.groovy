@@ -108,7 +108,6 @@ pipeline {
         anyOf {
           branch 'develop'
           branch 'main'
-        // branch 'test'
         }
       }
       steps {
@@ -121,7 +120,13 @@ pipeline {
             sh 'docker login ghcr.io -u $USERNAME -p $PASSWORD'
 
             script {
-              if (env.BRANCH_NAME ==~ /(develop|test)/) { //push commit tags
+              if (env.BRANCH_NAME ==~ /(main)/) { // push latest and version tags
+                sh "docker tag portal:${commit} ${dockerImgRepo}:${version}"
+                sh "docker push ${dockerImgRepo}:${version}"
+
+                sh "docker tag portal:${commit} ${dockerImgRepo}:latest"
+                sh "docker push ${dockerImgRepo}:latest"
+              } else { //push commit tags
                 sh "docker tag portal:${commit} ${dockerImgRepo}:${commit}"
                 sh "docker push ${dockerImgRepo}:${commit}"
               }
@@ -129,14 +134,6 @@ pipeline {
               if (env.BRANCH_NAME ==~ /(develop)/) { //push edge tags
                 sh "docker tag portal:${commit} ${dockerImgRepo}:edge"
                 sh "docker push ${dockerImgRepo}:edge"
-              }
-
-              if (env.BRANCH_NAME ==~ /(main)/) { // push latest and version tags
-                sh "docker tag portal:${commit} ${dockerImgRepo}:${version}"
-                sh "docker push ${dockerImgRepo}:${version}"
-
-                sh "docker tag portal:${commit} ${dockerImgRepo}:latest"
-                sh "docker push ${dockerImgRepo}:latest"
               }
             }
           }
@@ -166,7 +163,6 @@ pipeline {
       when {
         anyOf {
           branch 'develop'
-          // branch 'test'
         }
       }
       steps {

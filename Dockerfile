@@ -55,6 +55,10 @@ COPY --from=builder \
   $APP_FOLDER/package.json \
   package.json
 
+COPY --from=builder \
+  $APP_FOLDER/tsconfig.json \
+  tsconfig.json
+
 USER $APP_USER
 
 CMD node -r tsconfig-paths/register index.js

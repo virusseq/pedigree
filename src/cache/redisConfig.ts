@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
-import { config } from '../config';
+
+import { config } from '@/config';
 
 const client = createClient({
   socket: {
@@ -11,7 +12,7 @@ const client = createClient({
 
 export const connectRedis = (): Promise<void> => {
   return new Promise(async (resolve, reject) => {
-    client.on('error', (err) => reject('Redis Client Error:' + err));
+    client.on('error', (err) => reject(new Error(`Redis Client Error: ${err}`)));
 
     if (!client.isOpen) {
       await client.connect();
@@ -19,20 +20,18 @@ export const connectRedis = (): Promise<void> => {
 
     return resolve();
   });
-}
+};
 
 export const disconnectRedis = () => {
   if (!client.isOpen) {
     client.quit;
   }
-}
+};
 
 export const saveHash = async (key: string, value: Record<string, string | number>) => {
-  return await client.hSet(key, [
-    ...Object.entries(value).flat(),
-  ]);
-}
+  return await client.hSet(key, [...Object.entries(value).flat()]);
+};
 
 export const getHash = async (key: string) => {
   return await client.hGetAll(key);
-}
+};
