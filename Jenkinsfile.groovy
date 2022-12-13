@@ -108,7 +108,6 @@ pipeline {
         anyOf {
           branch 'develop'
           branch 'main'
-          branch 'pedigree-containerized'
         }
       }
       steps {
@@ -164,7 +163,6 @@ pipeline {
       when {
         anyOf {
           branch 'develop'
-          branch 'pedigree-containerized'
         }
       }
       steps {
