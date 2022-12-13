@@ -12,7 +12,7 @@ import { startUpdateAnalysisPipeline } from '@/services/index';
 
 enum Profiles {
   LOADCACHE = 'LOADCACHE',
-  UPDATECACHE = 'UPDATEANALYSIS'
+  UPDATECACHE = 'UPDATEANALYSIS',
 }
 
 /**

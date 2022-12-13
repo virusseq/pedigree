@@ -20,20 +20,18 @@ export const connectRedis = (): Promise<void> => {
 
     return resolve();
   });
-}
+};
 
 export const disconnectRedis = () => {
   if (!client.isOpen) {
     client.quit;
   }
-}
+};
 
 export const saveHash = async (key: string, value: Record<string, string | number>) => {
-  return await client.hSet(key, [
-    ...Object.entries(value).flat(),
-  ]);
-}
+  return await client.hSet(key, [...Object.entries(value).flat()]);
+};
 
 export const getHash = async (key: string) => {
   return await client.hGetAll(key);
-}
+};

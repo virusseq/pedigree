@@ -31,7 +31,7 @@ export const getLatestViralAIFile = (): Promise<string> => {
       .then((files: GetFilesResponse) => getNewestFile(files[0]))
       .then(getFileName)
       .then((resp) => resolve(resp))
-      .catch(err => reject(new Error(`ViralAI error:${err}`)));
+      .catch((err) => reject(new Error(`ViralAI error:${err}`)));
   });
 };
 

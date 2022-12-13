@@ -21,5 +21,5 @@ export const getFileName = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     logger.debug(`newest file is ${file.name} ${file.metadata.timeCreated}`);
     resolve(file.name);
-  })
-}
+  });
+};

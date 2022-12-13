@@ -72,7 +72,7 @@ const getPublicKey = async (): Promise<string> =>
   new Promise((resolve, reject) => {
     if (config.jwt.key) {
       return config.jwt.key;
-    }else if (config.jwt.url) {
+    } else if (config.jwt.url) {
       return axios
         .get(config.jwt.url)
         .then((response) => resolve(response.data))
