@@ -2,9 +2,9 @@ import axios from 'axios';
 import urlJoin from 'url-join';
 import axiosRetry from 'axios-retry';
 
-import logger from '../utils/logger';
-import { config } from '../config';
-import { getEgoToken } from '../security/ego';
+import logger from '@/utils/logger';
+import { config } from '@/config';
+import { getEgoToken } from '@/security/ego';
 
 export type GetAnalysesForStudyResponse = {
   analyses: Array<Analysis>;
@@ -41,7 +41,6 @@ export type Analysis = {
 // Exponential back-off retry delay between requests
 axiosRetry(axios, { retries: config.server.apiRetries, retryDelay: axiosRetry.exponentialDelay });
 
-
 export function getAllStudies(): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
     const fullUrl = urlJoin(config.song.endpoint, '/studies/all');
@@ -51,7 +50,7 @@ export function getAllStudies(): Promise<string[]> {
         logger.info(`found ${resp.data?.length} studies`);
         resolve(resp.data);
       })
-      .catch((err) => reject(err));
+      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
   });
 }
 
@@ -77,7 +76,7 @@ export function getAnalysisByStudyPaginated(
       .then((resp) => {
         resolve(resp.data);
       })
-      .catch((err) => reject(err));
+      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
   });
 }
 
@@ -94,11 +93,9 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
         },
       })
       .then((msg) => {
-        logger.info(
-          `analysisId:${analysisId} status:${msg.status}}`,
-        );
+        logger.info(`analysisId:${analysisId} status:${msg.status}}`);
         resolve('OK');
       })
-      .catch((err) => reject(err));
+      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
   });
 }

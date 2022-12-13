@@ -19,7 +19,8 @@
 
 import { createLogger, LoggerOptions, transports, format } from 'winston';
 
-import { config } from '../config';
+import { config } from '@/config';
+
 const { combine, timestamp, colorize, printf } = format;
 const options: LoggerOptions = {
   format: combine(
