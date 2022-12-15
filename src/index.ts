@@ -9,10 +9,12 @@ import logger from '@/utils/logger';
 import { startLoadCachePipeline } from '@/cache';
 import { disconnectRedis } from '@/cache/redisConfig';
 import { startUpdateAnalysisPipeline } from '@/services/index';
+import { sendSlackNotification, NOTIFICATION_CATEGORY_ICON } from '@/utils/slackNotifications';
+import { todaysDateTimezoned } from '@/utils/dates';
 
 enum Profiles {
-  LOADCACHE = 'LOADCACHE',
-  UPDATECACHE = 'UPDATEANALYSIS',
+  UPDATECACHE = 'UPDATECACHE',
+  UPDATEANALYSIS = 'UPDATEANALYSIS',
 }
 
 /**
@@ -23,13 +25,17 @@ async function runScript(args: any) {
   let profile = _.toUpper(argv.profile);
 
   logger.info(`Starting script with profile=${profile}`);
+  await sendSlackNotification({
+    message: { status: 'Starting script', time: todaysDateTimezoned() },
+    category: NOTIFICATION_CATEGORY_ICON.INFO,
+  });
   try {
     switch (profile) {
-      case Profiles.LOADCACHE:
+      case Profiles.UPDATECACHE:
         // this profile will save in cache all current analysis
         await startLoadCachePipeline();
         break;
-      case Profiles.UPDATECACHE:
+      case Profiles.UPDATEANALYSIS:
         // this profile will update analysis data using existing cache.
         // if cache is not up to date it will update cache
         await startUpdateAnalysisPipeline();
@@ -41,8 +47,16 @@ async function runScript(args: any) {
         break;
     }
     logger.info(`Script completed successfully`);
+    await sendSlackNotification({
+      message: { status: 'Script completed successfully', time: todaysDateTimezoned() },
+      category: NOTIFICATION_CATEGORY_ICON.INFO,
+    });
   } catch (error) {
     logger.error(`Error:${error}`);
+    await sendSlackNotification({
+      message: { status: 'Script finished with error', time: todaysDateTimezoned() },
+      category: NOTIFICATION_CATEGORY_ICON.ERROR,
+    });
   } finally {
     disconnectRedis();
     process.exit();
