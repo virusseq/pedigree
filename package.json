@@ -6,11 +6,11 @@
   "scripts": {
     "build": "ttsc",
     "dev": "ts-node ./src/index.ts",
-    "dev:update_analysis": "ts-node ./src/index.ts --profile=updateAnalysis",
-    "dev:load_cache": "ts-node ./src/index.ts --profile=loadCache",
+    "dev:updateAnalysis": "ts-node ./src/index.ts --profile=updateAnalysis",
+    "dev:updateCache": "ts-node ./src/index.ts --profile=updateCache",
     "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js",
-    "start:update_analysis": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js --profile=updateAnalysis",
-    "start:load_cache": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js --profile=loadCache",
+    "start:updateAnalysis": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js --profile=updateAnalysis",
+    "start:updateCache": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js --profile=updateCache",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -24,6 +24,7 @@
     "dotenv": "^16.0.0",
     "lodash": "^4.17.21",
     "minimist": "^1.2.6",
+    "moment-timezone": "^0.5.40",
     "redis": "^4.3.1",
     "url-join": "^4.0.1",
     "winston": "^3.8.2"

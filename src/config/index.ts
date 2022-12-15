@@ -2,6 +2,7 @@ export const config = {
   server: {
     debug: process.env.DEBUG === 'true',
     apiRetries: parseInt(process.env.API_RETRIES || '3'),
+    timezone: process.env.TIMEZONE || 'America/Toronto',
   },
   gs: {
     bucket: process.env.GS_BUCKET_NAME || '',
@@ -26,5 +27,8 @@ export const config = {
   },
   analysis: {
     typeVersion: parseInt(process.env.ANALYSIS_TYPE_VERSION || '1'),
+  },
+  notifications: {
+    slack_url: process.env.NOTIFICATIONS_SLACK_URL || '',
   },
 };
