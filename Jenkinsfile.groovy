@@ -108,6 +108,7 @@ pipeline {
         anyOf {
           branch 'develop'
           branch 'main'
+          branch 'feature/slack-notifications'
         }
       }
       steps {
@@ -163,6 +164,7 @@ pipeline {
       when {
         anyOf {
           branch 'develop'
+          branch 'feature/slack-notifications'
         }
       }
       steps {
