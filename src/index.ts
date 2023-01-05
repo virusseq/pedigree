@@ -10,8 +10,8 @@ import { startLoadCachePipeline } from '@/cache';
 import { disconnectRedis } from '@/cache/redisConfig';
 import { startUpdateAnalysisPipeline } from '@/services/index';
 import { sendSlackNotification, NOTIFICATION_CATEGORY_ICON } from '@/utils/slackNotifications';
-import { todaysDateTimezoned } from '@/utils/dates';
-import { analysis_patch_success } from '@/services/song';
+import { todaysDateTimezoned, msToTimeFormat } from '@/utils/dates';
+import { analysis_patch_failed, analysis_patch_success } from '@/services/song';
 
 enum Profiles {
   UPDATECACHE = 'UPDATECACHE',
@@ -26,6 +26,7 @@ async function runScript(args: any) {
   let profile = _.toUpper(argv.profile);
 
   logger.info(`Starting script with profile=${profile}`);
+  const startTime = process.hrtime.bigint();
   await sendSlackNotification({
     message: { event: 'Starting script', time: todaysDateTimezoned() },
     category: NOTIFICATION_CATEGORY_ICON.INFO,
@@ -68,6 +69,12 @@ async function runScript(args: any) {
       category: NOTIFICATION_CATEGORY_ICON.ERROR,
     });
   } finally {
+    logger.info(
+      `SUMMARY:
+      total analysis updated: ${analysis_patch_success}
+      total analysis failed: ${analysis_patch_failed}
+      Time elapsed: ${msToTimeFormat(process.hrtime.bigint() - startTime)} `,
+    );
     disconnectRedis();
     process.exit();
   }
