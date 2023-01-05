@@ -9,19 +9,25 @@ export enum NOTIFICATION_CATEGORY_ICON {
   WARN = ':warning:',
 }
 
-// export type MessageKey = 'event' | 'time' | 'updated' | 'failed';
-export type MessageMap = {
+type MessageObject = {
   event: string;
   time: string;
   analysisUpdated?: number;
   error?: any;
 };
 
+const messageObjectTitles: Record<keyof MessageObject, string> = {
+  event: 'Event',
+  time: 'Time',
+  analysisUpdated: 'Total analysis Updated',
+  error: 'Error message',
+};
+
 export const sendSlackNotification = async ({
   message,
   category,
 }: {
-  message: MessageMap;
+  message: MessageObject;
   category: NOTIFICATION_CATEGORY_ICON;
 }): Promise<void> => {
   if (config.notifications?.slack_url) {
@@ -29,7 +35,7 @@ export const sendSlackNotification = async ({
 
     const header = `${category} Script status`;
     const body = Object.entries(message)
-      .flatMap(([key, val]) => `>*${key}:* ${val}\n`)
+      .map(([key, val]) => `>*${messageObjectTitles[key as keyof MessageObject]}:* ${val}\n`)
       .join('');
 
     const payload = `${header}\n${body}`;
