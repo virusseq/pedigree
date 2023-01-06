@@ -38,6 +38,9 @@ export type Analysis = {
   lineage_analysis?: LineageAnalysis;
 };
 
+export let analysis_patch_success: number = 0;
+export let analysis_patch_failed: number = 0;
+
 // Exponential back-off retry delay between requests
 axiosRetry(axios, { retries: config.server.apiRetries, retryDelay: axiosRetry.exponentialDelay });
 
@@ -89,13 +92,17 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
     return axios
       .patch(fullUrl, data, {
         headers: {
-          Authorization: `Bearer ${await getEgoToken()}`,
+          Authorization: `Bearer ${await getEgoToken().catch(reject)}`,
         },
       })
       .then((msg) => {
         logger.info(`analysisId:${analysisId} status:${msg.status}}`);
+        analysis_patch_success++;
         resolve('OK');
       })
-      .catch((err) => reject(new Error(`SONG API ${fullUrl} error:${err}`)));
+      .catch((err) => {
+        analysis_patch_failed++;
+        reject(new Error(`SONG API ${fullUrl} error:${err}`));
+      });
   });
 }
