@@ -78,7 +78,10 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
               scorpioVersion: analysis.lineage_analysis?.scorpio_version || '',
             };
 
-            await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
+            await saveHash(
+              `${analysis.studyId}:${analysis.samples.at(0)?.submitterSampleId}`,
+              hsetData,
+            );
           }
         }
         logger.debug(`saveCacheAnalysis - finished caching ${analysisList?.length} analysis`);

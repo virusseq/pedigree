@@ -21,7 +21,7 @@ export const startUpdateAnalysisPipeline = function (): Promise<void> {
 export const handleData = new Writable({
   objectMode: true,
   write(source: TsvColumns, _encoding, callback) {
-    getCacheByKey(`sample:${source.specimen_collector_sample_ID}`)
+    getCacheByKey(`${source.study_id}:${source.specimen_collector_sample_ID}`)
       .then(async (cache: CacheData) => {
         if (isValidData(source, cache)) {
           const payload: Analysis = {
@@ -41,7 +41,7 @@ export const handleData = new Writable({
       })
       .catch((err) => {
         logger.error(
-          `An error occurred with specimen_collector_sample_ID:${source.specimen_collector_sample_ID}. ${err}`,
+          `An error occurred with ${source.study_id}:${source.specimen_collector_sample_ID}. ${err}`,
         );
         callback();
       });
