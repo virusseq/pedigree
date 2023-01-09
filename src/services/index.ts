@@ -24,7 +24,7 @@ export const handleData = new Writable({
     getCacheByKey(`${source.study_id}:${source.specimen_collector_sample_ID}`)
       .then(async (cache: CacheData) => {
         if (isValidData(source, cache)) {
-          const payload: Analysis = {
+          const payload: Partial<Analysis> = {
             lineage_analysis: {
               lineage_name: source.lineage,
               lineage_analysis_software_name: lineageSoftwareName,
@@ -50,10 +50,10 @@ export const handleData = new Writable({
 
 function isValidData(source: TsvColumns, cache: CacheData): boolean {
   if (cache.lineageName == source.lineage) {
-    logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
+    logger.debug(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
     return false;
   } else if (cache.analysisTypeVersion != config.analysis.typeVersion) {
-    logger.info(
+    logger.error(
       `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysis.typeVersion}`,
     );
     return false;

@@ -31,8 +31,8 @@ export type LineageAnalysis = {
 };
 
 export type Analysis = {
-  analysisId?: string;
-  studyId?: string;
+  analysisId: string;
+  studyId: string;
   analysisType?: AnalysisType;
   samples?: Array<Sample>;
   lineage_analysis?: LineageAnalysis;
@@ -65,7 +65,7 @@ export function getAnalysisByStudyPaginated(
   const analysisState: string = 'PUBLISHED';
 
   logger.debug(
-    `getAnalysisByStudyPaginated - fetching analysis for study:${studyId} limit:${limit} offset:${offset}`,
+    `getAnalysisByStudyPaginated - fetching limit:${limit} analysis for study:${studyId} offset:${offset}`,
   );
 
   const fullUrl = urlJoin(
@@ -96,12 +96,13 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
         },
       })
       .then((msg) => {
-        logger.info(`analysisId:${analysisId} status:${msg.status}}`);
+        logger.debug(`analysisId:${analysisId} status:${msg.status}}`);
         analysis_patch_success++;
         resolve('OK');
       })
       .catch((err) => {
         analysis_patch_failed++;
+        logger.error(`SONG API ${fullUrl} error:${err}`);
         reject(new Error(`SONG API ${fullUrl} error:${err}`));
       });
   });

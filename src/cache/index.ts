@@ -20,9 +20,8 @@ export const startLoadCachePipeline = function (): Promise<void> {
       .then(getAllStudies)
       .then(async (studies) => {
         for (const [index, study] of studies.entries()) {
-          logger.info(`Start fetching ${index + 1}/${studies.length} studyId: ${study}`);
+          logger.info(`Fetching ${index + 1}/${studies.length} studyId: ${study}`);
           await getAndCacheAnalysisByStudy(study);
-          logger.info(`End fetching ${index + 1}/${studies.length} studyId: ${study}`);
         }
         resolve();
       })
@@ -45,7 +44,9 @@ function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
         try {
           await saveCacheAnalysis(resp.analyses);
           logger.info(
-            `Cashing progress study ${studyId}: ${Math.round((offset / total) * 100 * 100) / 100}%`,
+            `getAndCacheAnalysisByStudy - Cashing progress study ${studyId}: ${
+              Math.round((offset / total) * 100 * 100) / 100
+            }%`,
           );
         } catch (error) {
           logger.error(`Cashing Error on saveCacheAnalysis: ${error}`);
@@ -61,7 +62,8 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     connectRedis()
       .then(async () => {
-        logger.debug(`saveCacheAnalysis - start caching ${analysisList?.length} analysis`);
+        logger.debug(`saveCacheAnalysis - caching ${analysisList?.length} analysis`);
+
         for (const analysis of analysisList) {
           if (analysis.samples?.at(0)?.submitterSampleId != null) {
             const hsetData: CacheData = {
@@ -84,7 +86,6 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
             );
           }
         }
-        logger.debug(`saveCacheAnalysis - finished caching ${analysisList?.length} analysis`);
         resolve();
       })
       .catch((error) => reject(error));
