@@ -2,7 +2,7 @@ import { Writable } from 'stream';
 
 import logger from '@/utils/logger';
 import { config } from '@/config';
-import { getCacheByKey, CacheData } from '@/cache';
+import { getCacheByKey, CacheData, hashKeyFormatter } from '@/cache';
 import { Analysis, patchAnalysis } from '@/services/song';
 
 import { getLatestViralAIFile, streamFileDownload, TsvColumns } from './viralAI';
@@ -21,7 +21,7 @@ export const startUpdateAnalysisPipeline = function (): Promise<void> {
 export const handleData = new Writable({
   objectMode: true,
   write(source: TsvColumns, _encoding, callback) {
-    getCacheByKey(`${source.study_id}:${source.specimen_collector_sample_ID}`)
+    getCacheByKey(hashKeyFormatter(source.study_id, source.specimen_collector_sample_ID))
       .then(async (cache: CacheData) => {
         if (isValidData(source, cache)) {
           const payload: Partial<Analysis> = {

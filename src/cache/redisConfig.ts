@@ -28,10 +28,12 @@ export const disconnectRedis = () => {
   }
 };
 
-export const saveHash = async (key: string, value: Record<string, string | number>) => {
+export type keyFormat = `${string}:${string}`;
+
+export const saveHash = async (key: keyFormat, value: Record<string, string | number>) => {
   return await client.hSet(key, [...Object.entries(value).flat()]);
 };
 
-export const getHash = async (key: string) => {
+export const getHash = async (key: keyFormat) => {
   return await client.hGetAll(key);
 };

@@ -1,7 +1,7 @@
 import logger from '@/utils/logger';
 import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from '@/services/song';
 
-import { connectRedis, saveHash, getHash } from './redisConfig';
+import { connectRedis, saveHash, getHash, keyFormat } from './redisConfig';
 
 export type CacheData = {
   analysisId: string;
@@ -81,7 +81,7 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
             };
 
             await saveHash(
-              `${analysis.studyId}:${analysis.samples.at(0)?.submitterSampleId}`,
+              hashKeyFormatter(analysis.studyId, analysis.samples.at(0)?.submitterSampleId!),
               hsetData,
             );
           }
@@ -92,7 +92,7 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
   });
 }
 
-export const getCacheByKey = (key: string): Promise<CacheData> => {
+export const getCacheByKey = (key: keyFormat): Promise<CacheData> => {
   return new Promise((resolve, reject) => {
     connectRedis()
       .then(async () => {
@@ -119,4 +119,8 @@ function toCacheData(data: any): CacheData {
   };
 
   return cacheData;
+}
+
+export function hashKeyFormatter(studyId: string, submitterSampleId: string): keyFormat {
+  return `${studyId}:${submitterSampleId}`;
 }
