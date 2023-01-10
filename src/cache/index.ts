@@ -1,7 +1,7 @@
 import logger from '@/utils/logger';
 import { Analysis, getAllStudies, getAnalysisByStudyPaginated } from '@/services/song';
 
-import { connectRedis, saveHash, getHash } from './redisConfig';
+import { connectRedis, saveHash, getHash, keyFormat } from './redisConfig';
 
 export type CacheData = {
   analysisId: string;
@@ -20,9 +20,8 @@ export const startLoadCachePipeline = function (): Promise<void> {
       .then(getAllStudies)
       .then(async (studies) => {
         for (const [index, study] of studies.entries()) {
-          logger.info(`Start fetching ${index + 1}/${studies.length} studyId: ${study}`);
+          logger.info(`Fetching ${index + 1}/${studies.length} studyId: ${study}`);
           await getAndCacheAnalysisByStudy(study);
-          logger.info(`End fetching ${index + 1}/${studies.length} studyId: ${study}`);
         }
         resolve();
       })
@@ -45,7 +44,9 @@ function getAndCacheAnalysisByStudy(studyId: string): Promise<string> {
         try {
           await saveCacheAnalysis(resp.analyses);
           logger.info(
-            `Cashing progress study ${studyId}: ${Math.round((offset / total) * 100 * 100) / 100}%`,
+            `getAndCacheAnalysisByStudy - Cashing progress study ${studyId}: ${
+              Math.round((offset / total) * 100 * 100) / 100
+            }%`,
           );
         } catch (error) {
           logger.error(`Cashing Error on saveCacheAnalysis: ${error}`);
@@ -61,7 +62,8 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     connectRedis()
       .then(async () => {
-        logger.debug(`saveCacheAnalysis - start caching ${analysisList?.length} analysis`);
+        logger.debug(`saveCacheAnalysis - caching ${analysisList?.length} analysis`);
+
         for (const analysis of analysisList) {
           if (analysis.samples?.at(0)?.submitterSampleId != null) {
             const hsetData: CacheData = {
@@ -78,17 +80,19 @@ function saveCacheAnalysis(analysisList: Array<Analysis>): Promise<void> {
               scorpioVersion: analysis.lineage_analysis?.scorpio_version || '',
             };
 
-            await saveHash(`sample:${analysis.samples.at(0)?.submitterSampleId}`, hsetData);
+            await saveHash(
+              hashKeyFormatter(analysis.studyId, analysis.samples.at(0)?.submitterSampleId!),
+              hsetData,
+            );
           }
         }
-        logger.debug(`saveCacheAnalysis - finished caching ${analysisList?.length} analysis`);
         resolve();
       })
       .catch((error) => reject(error));
   });
 }
 
-export const getCacheByKey = (key: string): Promise<CacheData> => {
+export const getCacheByKey = (key: keyFormat): Promise<CacheData> => {
   return new Promise((resolve, reject) => {
     connectRedis()
       .then(async () => {
@@ -115,4 +119,8 @@ function toCacheData(data: any): CacheData {
   };
 
   return cacheData;
+}
+
+export function hashKeyFormatter(studyId: string, submitterSampleId: string): keyFormat {
+  return `${studyId}:${submitterSampleId}`;
 }

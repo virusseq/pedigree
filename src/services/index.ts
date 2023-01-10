@@ -2,7 +2,7 @@ import { Writable } from 'stream';
 
 import logger from '@/utils/logger';
 import { config } from '@/config';
-import { getCacheByKey, CacheData } from '@/cache';
+import { getCacheByKey, CacheData, hashKeyFormatter } from '@/cache';
 import { Analysis, patchAnalysis } from '@/services/song';
 
 import { getLatestViralAIFile, streamFileDownload, TsvColumns } from './viralAI';
@@ -21,10 +21,10 @@ export const startUpdateAnalysisPipeline = function (): Promise<void> {
 export const handleData = new Writable({
   objectMode: true,
   write(source: TsvColumns, _encoding, callback) {
-    getCacheByKey(`sample:${source.specimen_collector_sample_ID}`)
+    getCacheByKey(hashKeyFormatter(source.study_id, source.specimen_collector_sample_ID))
       .then(async (cache: CacheData) => {
         if (isValidData(source, cache)) {
-          const payload: Analysis = {
+          const payload: Partial<Analysis> = {
             lineage_analysis: {
               lineage_name: source.lineage,
               lineage_analysis_software_name: lineageSoftwareName,
@@ -41,7 +41,7 @@ export const handleData = new Writable({
       })
       .catch((err) => {
         logger.error(
-          `An error occurred with specimen_collector_sample_ID:${source.specimen_collector_sample_ID}. ${err}`,
+          `An error occurred with ${source.study_id}:${source.specimen_collector_sample_ID}. ${err}`,
         );
         callback();
       });
@@ -50,10 +50,10 @@ export const handleData = new Writable({
 
 function isValidData(source: TsvColumns, cache: CacheData): boolean {
   if (cache.lineageName == source.lineage) {
-    logger.info(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
+    logger.debug(`No changes for analysisId:${cache.analysisId} onlineage prop. skipping..`);
     return false;
   } else if (cache.analysisTypeVersion != config.analysis.typeVersion) {
-    logger.info(
+    logger.error(
       `AnalysisId:${cache.analysisId} with analysisTypeVersion(${cache.analysisTypeVersion}) not supported. Must be version:${config.analysis.typeVersion}`,
     );
     return false;
