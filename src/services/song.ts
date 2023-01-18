@@ -42,7 +42,7 @@ export let analysis_patch_success: number = 0;
 export let analysis_patch_failed: number = 0;
 
 // retry after a timeout is reached
-const AXIOS_CONFIG_TIMEOUT = 2000;
+const AXIOS_CONFIG_TIMEOUT = 10000;
 axiosRetry(axios, {
   retries: config.server.apiRetries,
   shouldResetTimeout: true,
