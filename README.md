@@ -31,6 +31,7 @@ This script has been tested using NodeJS v^16.
 | REDIS_PASSWORD          | String  | Redis password                                                                           |
 | ANALYSIS_TYPE_VERSION   | Number  | Default `1`. Process only the Analysis within this schema version.                       |
 | API_RETRIES             | Number  | Default `3`. Retries when API call fails                                                 |
+| API_TIMEOUT             | Number  | Default `10000`. (Milliseconds) Response timeout on API calls.                           |
 | NOTIFICATIONS_SLACK_URL | String  | Webhook URL defines to which channel post notifications                                  |
 | TIMEZONE                | String  | Default `America/Toronto`. Use a zoneId format {area}/{city} to handle daylight savings. |
 
