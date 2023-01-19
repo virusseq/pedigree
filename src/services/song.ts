@@ -56,7 +56,7 @@ export function getAllStudies(): Promise<string[]> {
   return new Promise<string[]>((resolve, reject) => {
     const fullUrl = urlJoin(config.song.endpoint, '/studies/all');
     return axios
-      .get(fullUrl)
+      .get(fullUrl, { timeout: config.server.apiTimeout })
       .then((resp) => {
         logger.info(`found ${resp.data?.length} studies`);
         resolve(resp.data);
@@ -102,6 +102,7 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
         headers: {
           Authorization: `Bearer ${await getEgoToken().catch(reject)}`,
         },
+        timeout: config.server.apiTimeout,
       })
       .then((msg) => {
         analysis_patch_success++;
