@@ -2,6 +2,7 @@ export const config = {
   server: {
     debug: process.env.DEBUG === 'true',
     apiRetries: parseInt(process.env.API_RETRIES || '3'),
+    apiTimeout: parseInt(process.env.API_TIMEOUT || '10000'),
     timezone: process.env.TIMEZONE || 'America/Toronto',
   },
   gs: {
