@@ -104,8 +104,10 @@ export function patchAnalysis(studyId: string, analysisId: string, data: any): P
         },
       })
       .then((msg) => {
-        logger.debug(`analysisId:${analysisId} status:${msg.status}}`);
         analysis_patch_success++;
+        logger.info(
+          `# success analysis:${analysis_patch_success} analysisId:${analysisId} status:${msg.status}}`,
+        );
         resolve('OK');
       })
       .catch((err) => {
