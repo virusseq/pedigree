@@ -30,12 +30,14 @@ spec:
       runAsGroup: 1000
       fsGroup: 1000
   - name: dind-daemon
-    image: docker:18.06-dind
+    image: docker:19.03.14-dind
     securityContext:
       privileged: true
+      runAsUser: 0
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ''
+    args: ["--registry-mirror", "https://registry.dev.argo.cancercollaboratory.org"]
     volumeMounts:
       - name: dind-storage
         mountPath: /var/lib/docker
