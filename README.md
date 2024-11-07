@@ -1,4 +1,4 @@
-# Pedigree Script
+# Pedigree (Sequence Lineage updating script)
 
 The purpose of this script is to syncronize data from a Cloud Object Storage (as a .tsv format) to VirusSeq data repository.
 
