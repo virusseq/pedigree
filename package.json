@@ -16,7 +16,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@google-cloud/storage": "^6.5.0",
+		"@google-cloud/storage": "^7.14.0",
 		"@icgc-argo/ego-token-utils": "^8.2.0",
 		"axios": "^0.25.0",
 		"axios-retry": "^3.3.1",
@@ -46,10 +46,5 @@
 		"semi": true,
 		"singleQuote": true,
 		"useTabs": true
-	},
-	"overrides": {
-		"@google-cloud/storage": {
-			"stream-shift": "1.0.3"
-		}
 	}
 }
