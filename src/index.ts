@@ -75,7 +75,7 @@ async function runScript(args: any) {
       total analysis failed: ${analysis_patch_failed}
       Time elapsed: ${msToTimeFormat(process.hrtime.bigint() - startTime)} `,
     );
-    disconnectRedis();
+    await disconnectRedis();
     process.exit();
   }
 }

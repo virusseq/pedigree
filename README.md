@@ -26,14 +26,22 @@ This script has been tested using NodeJS v^16.
 | EGO_URL                 | String  | Ego URL API                                                                              |
 | JWT_KEY                 | String  | Public key. This variable is optional if JWT_KEY_URL is set                              |
 | JWT_KEY_URL             | String  | URL to fetch the public key. This variable is optional if JWT_KEY is set                 |
-| REDIS_HOST              | String  | Default `localhost`                                                                      |
-| REDIS_PORT              | Number  | Default `6379`                                                                           |
+| REDIS_HOST              | String  | Default `localhost`. Comma-separated hosts enable cluster mode (e.g. `host1:6379,host2:6379`). |
+| REDIS_PORT              | Number  | Default `6379`. Used when a host entry omits a port.                                       |
 | REDIS_PASSWORD          | String  | Redis password                                                                           |
 | ANALYSIS_TYPE_VERSION   | Number  | Default `1`. Process only the Analysis within this schema version.                       |
 | API_RETRIES             | Number  | Default `3`. Retries when API call fails                                                 |
 | API_TIMEOUT             | Number  | Default `10000`. (Milliseconds) Response timeout on API calls.                           |
 | NOTIFICATIONS_SLACK_URL | String  | Webhook URL defines to which channel post notifications                                  |
 | TIMEZONE                | String  | Default `America/Toronto`. Use a zoneId format {area}/{city} to handle daylight savings. |
+
+### Example .env (Redis / Valkey cluster)
+
+```
+REDIS_HOST=valkey-1:6379,valkey-2:6379,valkey-3:6379
+REDIS_PORT=6379
+REDIS_PASSWORD=your-password
+```
 
 ### Profiles
 

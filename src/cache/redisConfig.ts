@@ -1,39 +1,80 @@
-import { createClient } from 'redis';
+import { createClient, createCluster, RedisClientType, RedisClusterType } from 'redis';
 
 import { config } from '@/config';
 
-const client = createClient({
-  socket: {
-    host: config.redis.host,
-    port: config.redis.port,
-  },
-  password: config.redis.password,
-});
+type RedisClient = RedisClientType | RedisClusterType;
+type RedisHost = { host: string; port: number };
 
-export const connectRedis = (): Promise<void> => {
-  return new Promise(async (resolve, reject) => {
-    client.on('error', (err) => reject(new Error(`Redis Client Error: ${err}`)));
-
-    if (!client.isOpen) {
-      await client.connect();
-    }
-
-    return resolve();
-  });
+type RedisHostConfig = {
+	password: string;
+	socket: {
+		host: string;
+		port: number;
+	};
 };
 
-export const disconnectRedis = () => {
-  if (!client.isOpen) {
-    client.quit;
-  }
+const parseHosts = (hostValue: string, fallbackPort: number): RedisHost[] => {
+	const entries = hostValue
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+
+	// If they give no host, it must be local
+	if (entries.length === 0) {
+		return [{ host: 'localhost', port: fallbackPort }];
+	}
+
+	return entries.map((entry) => {
+		// does the entry have both host:port
+		const match = entry.match(/^(.*):(\d+)$/);
+
+		return match ? { host: match[1], port: Number(match[2]) } : { host: entry, port: fallbackPort };
+	});
+};
+
+const hosts = parseHosts(config.redis.host, config.redis.port);
+const multipleHosts = hosts.length > 1;
+const makeHostConfig = ({ host, port }: RedisHost): RedisHostConfig => ({
+	password: config.redis.password,
+	socket: {
+		host,
+		port,
+	},
+});
+const hostConfigs = (multipleHosts ? hosts : [hosts[0]]).map(makeHostConfig);
+const isCluster = multipleHosts || hosts[0].host.includes('cluster');
+const client: RedisClient = isCluster ? createCluster({ rootNodes: hostConfigs }) : createClient(hostConfigs[0]);
+
+client.on('error', (err) => {
+	throw new Error(`Redis Client Error: ${err}`);
+});
+
+const isSingleClientOpen = (redisClient: RedisClient): boolean => {
+	if ('isOpen' in redisClient && typeof (redisClient as RedisClientType).isOpen === 'boolean') {
+		return (redisClient as RedisClientType).isOpen;
+	}
+
+	return false;
+};
+
+export const connectRedis = async (): Promise<void> => {
+	if (!isCluster && isSingleClientOpen(client)) {
+		return;
+	}
+
+	await client.connect();
+};
+
+export const disconnectRedis = async (): Promise<void> => {
+	await client.close();
 };
 
 export type keyFormat = `${string}:${string}`;
 
 export const saveHash = async (key: keyFormat, value: Record<string, string | number>) => {
-  return await client.hSet(key, [...Object.entries(value).flat()]);
+	return await client.hSet(key, [...Object.entries(value).flat()]);
 };
 
 export const getHash = async (key: keyFormat) => {
-  return await client.hGetAll(key);
+	return await client.hGetAll(key);
 };
