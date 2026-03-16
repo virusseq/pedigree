@@ -1,6 +1,7 @@
 import { createClient, createCluster, RedisClientType, RedisClusterType } from 'redis';
 
 import { config } from '@/config';
+import logger from '@/utils/logger';
 
 type RedisClient = RedisClientType | RedisClusterType;
 type RedisHost = { host: string; port: number };
@@ -57,12 +58,22 @@ const isSingleClientOpen = (redisClient: RedisClient): boolean => {
 	return false;
 };
 
+const ping = async () => {
+	const pingResult = await client.ping();
+	if (pingResult !== 'PONG') {
+    	throw new Error('Redis client connected but did not respond to PING');
+    }
+	logger.info('Redis client is connected and ready');
+}
+
 export const connectRedis = async (): Promise<void> => {
 	if (!isCluster && isSingleClientOpen(client)) {
 		return;
 	}
 
 	await client.connect();
+
+	await ping();
 };
 
 export const disconnectRedis = async (): Promise<void> => {
